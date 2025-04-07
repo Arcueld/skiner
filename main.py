@@ -25,6 +25,17 @@ logging.basicConfig(format='%(asctime)s - %(levelname)s - %(message)s', level=lo
 # 创建必要的目录
 if not os.path.exists("installed"):
     os.makedirs("installed")
+else:
+    for file in os.listdir("installed"):
+            file_path = os.path.join("installed", file)
+            try:
+                if os.path.isfile(file_path):
+                    os.unlink(file_path)
+                elif os.path.isdir(file_path):
+                    shutil.rmtree(file_path)
+                logging.info(f"已清理: {file_path}")
+            except Exception as e:
+                logging.error(f"清理文件失败: {file_path}, 错误: {e}")
 if not os.path.exists("profiles"):
     os.makedirs("profiles")
 
