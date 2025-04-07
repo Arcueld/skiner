@@ -48,7 +48,6 @@ class GameAPI:
         
         for champion in champions:
             if champion["id"] == champion_id:
-                logging.info(f"当前英雄: {champion['name']}")
                 return champion["alias"]
         
         return None
