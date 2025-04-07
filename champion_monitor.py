@@ -66,4 +66,4 @@ class ChampionMonitor:
             except Exception as e:
                 logging.error(f"监控过程中发生错误: {e}")
             
-            time.sleep(0.2)
+            time.sleep(0.3)
