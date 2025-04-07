@@ -21,6 +21,7 @@ class GameAPI:
         app_port = output.split('--app-port=')[-1].split(' ')[0].strip('\"') 
         auth_token = output.split('--remoting-auth-token=')[-1].split(' ')[0].strip('\"') 
         self.url = "https" + '://' + 'riot:' + auth_token + '@' + "127.0.0.1" + ':' + app_port
+        logging.info(f"API: {self.url}")
         if(auth_token == ""):
             exit("请先启动lol")
         # 获取召唤师ID
@@ -39,7 +40,7 @@ class GameAPI:
     
     def get_current_champion_id(self):
         """获取当前选择的英雄ID"""
-        res = requests.get(url=self.url + "/lol-champ-select-legacy/v1/current-champion", verify=False)
+        res = requests.get(url=self.url + "/lol-champ-select/v1/current-champion", verify=False)
         return res.json()
     
     def get_champion_alias(self, champion_id):
