@@ -237,8 +237,12 @@ class SkinWebServer:
     def start(self, port=5000):
         """在新线程中启动Web服务器"""
         def run_server():
+            import logging as flask_logging
+            flask_logging.getLogger('werkzeug').setLevel(flask_logging.ERROR)
             self.app.run(host='127.0.0.1', port=port, debug=False)
-        
+
+
+
         server_thread = threading.Thread(target=run_server)
         server_thread.daemon = True
         server_thread.start()
