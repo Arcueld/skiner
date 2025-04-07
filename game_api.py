@@ -21,7 +21,8 @@ class GameAPI:
         app_port = output.split('--app-port=')[-1].split(' ')[0].strip('\"') 
         auth_token = output.split('--remoting-auth-token=')[-1].split(' ')[0].strip('\"') 
         self.url = "https" + '://' + 'riot:' + auth_token + '@' + "127.0.0.1" + ':' + app_port
-        
+        if(auth_token == ""):
+            exit("请先启动lol")
         # 获取召唤师ID
         self.get_summoner_id()
         
