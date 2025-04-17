@@ -133,7 +133,10 @@ except Exception as e:
     sync_result = False
 
 # 初始化游戏API
-game_api = GameAPI()
+try:
+    game_api = GameAPI()
+except:
+    exit("先开游戏")
 
 # 加载皮肤数据
 normal_tools = tools()
@@ -144,7 +147,7 @@ modtools = modTools()
 
 # 创建Web服务器
 web_server = SkinWebServer(modtools)
-web_server.start()
+web_server.start(18081)
 
 # 创建并启动英雄监控
 champion_monitor = ChampionMonitor(game_api, web_server, skin_dict)

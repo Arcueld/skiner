@@ -4,6 +4,8 @@ import threading
 import webbrowser
 from flask import Flask, render_template, request, jsonify
 
+targetPort = None
+
 class SkinWebServer:
     def __init__(self, modtools=None):
         self.app = Flask(__name__, template_folder='templates', static_folder='static')
@@ -236,20 +238,20 @@ class SkinWebServer:
     
     def start(self, port=5000):
         """在新线程中启动Web服务器"""
+        targetPort = port
         def run_server():
             import logging as flask_logging
             flask_logging.getLogger('werkzeug').setLevel(flask_logging.ERROR)
-            self.app.run(host='127.0.0.1', port=port, debug=False)
-
-
-
+            # 修改为threaded=True确保请求能被正确处理
+            self.app.run(host='127.0.0.1', port=port, debug=False, threaded=True, use_reloader=False)
+    
         server_thread = threading.Thread(target=run_server)
         server_thread.daemon = True
         server_thread.start()
-        logging.info(f"Web服务器已启动，访问 http://127.0.0.1:{port}")
+        logging.info(f"Web服务器已启动，访问 http://127.0.0.1:{targetPort}")
         return server_thread
     
     def open_browser(self):
         """打开浏览器访问Web页面"""
-        webbrowser.open('http://127.0.0.1:5000')
+        webbrowser.open(f'http://127.0.0.1:{targetPort}')
         logging.info("已打开浏览器")
