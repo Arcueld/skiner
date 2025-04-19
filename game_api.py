@@ -2,6 +2,7 @@ import json
 import logging
 import requests
 import subprocess
+import psutil
 import os
 
 class GameAPI:
@@ -12,14 +13,16 @@ class GameAPI:
     
     def initialize(self):
         """初始化游戏API连接"""
-        output, error = subprocess.Popen(
-            "wmic PROCESS WHERE name='LeagueClientUx.exe' GET commandline", 
-            shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE
-        ).communicate()
-        
-        output = output.decode("gbk")
-        app_port = output.split('--app-port=')[-1].split(' ')[0].strip('\"') 
-        auth_token = output.split('--remoting-auth-token=')[-1].split(' ')[0].strip('\"') 
+
+        target_name = "LeagueClientUx.exe"
+        cmdline = None
+        for proc in psutil.process_iter(['name', 'cmdline']):
+            if proc.info['name'] == target_name:
+                cmdline = " ".join(proc.info['cmdline'])
+                print(cmdline)
+
+        app_port = cmdline.split('--app-port=')[-1].split(' ')[0].strip('\"') 
+        auth_token = cmdline.split('--remoting-auth-token=')[-1].split(' ')[0].strip('\"') 
         self.url = "https" + '://' + 'riot:' + auth_token + '@' + "127.0.0.1" + ':' + app_port
         logging.info(f"API: {self.url}")
         if(auth_token == ""):
