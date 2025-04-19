@@ -9,8 +9,6 @@
 
 # 注意事项
 
-1. 确保电脑上有wmic 因为要用api得通过wmic获取对应的端口和token, WIN11 24H2之后默认不安装
+1. 本项目严重依赖lol-skins项目, 确保网络通畅以clone该repo
 
-2. 管理员权限启动 原因同上
-
-3. 本项目严重依赖lol-skins项目, 确保网络通畅以clone该repo
+2. 需要装git,原因同上https://git-scm.com/ 
