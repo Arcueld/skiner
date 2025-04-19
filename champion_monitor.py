@@ -43,10 +43,11 @@ class ChampionMonitor:
                     champion_alias = self.game_api.get_champion_alias(champion_id)
                     
                     # 只有当英雄变化时才更新数据
-                    if champion_alias != last_champion:
+                    if champion_alias != None and champion_alias != last_champion:
                         last_champion = champion_alias
                         
-                        if champion_alias in self.skin_dict:
+                        # 不区分大小写
+                        if champion_alias.lower() in (k.lower() for k in self.skin_dict):
                             available_skins = self.skin_dict[champion_alias]
                             logging.info(f"找到 {len(available_skins)} 个 {champion_alias} 的皮肤: {available_skins}")
                             
