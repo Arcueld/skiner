@@ -19,7 +19,6 @@ class GameAPI:
         for proc in psutil.process_iter(['name', 'cmdline']):
             if proc.info['name'] == target_name:
                 cmdline = " ".join(proc.info['cmdline'])
-                print(cmdline)
 
         app_port = cmdline.split('--app-port=')[-1].split(' ')[0].strip('\"') 
         auth_token = cmdline.split('--remoting-auth-token=')[-1].split(' ')[0].strip('\"') 
