@@ -122,6 +122,9 @@ def sync_skins_repo():
     
     except Exception as e:
         logging.error(f"同步过程中发生错误: {e}")
+        if os.path.exists(temp_dir):
+            shutil.rmtree(temp_dir, ignore_errors=True)
+            logging.info(f"已删除临时目录: {temp_dir}")
         return False
     
 
@@ -135,8 +138,8 @@ except Exception as e:
 # 初始化游戏API
 try:
     game_api = GameAPI()
-except:
-    exit("先开游戏")
+except Exception as e:
+    exit(f"先开游戏 {e}")
 
 # 加载皮肤数据
 normal_tools = tools()
