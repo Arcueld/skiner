@@ -150,60 +150,120 @@ class modTools:
         # 创建停止事件
         stop_event = threading.Event()
         
-        # 创建一个线程来运行命令并实时获取输出
+        # Check if process has admin privileges
+        def is_admin():
+            try:
+                return ctypes.windll.shell32.IsUserAnAdmin() != 0
+            except:
+                return False
+        
+        # Create a thread to run the command
         def run_command():
-            process = subprocess.Popen(
-                command,
-                shell=True,
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
-                text=True,
-                encoding='gbk'
-            )
+            # Check if we already have admin privileges
+            if is_admin():
+                # Run normally as we already have admin rights
+                logging.info("Already running with admin privileges, executing overlay normally")
+                process = subprocess.Popen(
+                    command,
+                    shell=True,
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.PIPE,
+                    text=True,
+                    encoding='gbk'
+                )
 
-            # 获取父进程 ID，找到子进程并终止它们
-            parent_pid = process.pid
+                # Get parent process ID to find and terminate child processes
+                parent_pid = process.pid
 
-            # 单独线程读取 stdout
-            def read_stdout():
-                for line in iter(process.stdout.readline, ''):
-                    logging.info(f"Overlay output: {line.strip()}")
-                process.stdout.close()
+                # Separate thread to read stdout
+                def read_stdout():
+                    for line in iter(process.stdout.readline, ''):
+                        logging.info(f"Overlay output: {line.strip()}")
+                    process.stdout.close()
 
-            stdout_thread = threading.Thread(target=read_stdout)
-            stdout_thread.start()
+                stdout_thread = threading.Thread(target=read_stdout)
+                stdout_thread.start()
 
-            # 主线程等待 stop_event
-            while not stop_event.is_set() and process.poll() is None:
-                time.sleep(0.1)
+                # Main thread waits for stop_event
+                while not stop_event.is_set() and process.poll() is None:
+                    time.sleep(0.1)
 
-            if stop_event.is_set():
-                logging.info("Received stop signal, terminating overlay process...")
+                if stop_event.is_set():
+                    logging.info("Received stop signal, terminating overlay process...")
 
-                # 使用 psutil 查找并终止子进程
+                    # Use psutil to find and terminate child processes
+                    try:
+                        parent_process = psutil.Process(parent_pid)
+                        for child in parent_process.children(recursive=True):
+                            logging.info(f"Killing child process {child.pid}")
+                            child.terminate()
+                            child.wait(timeout=5)
+                    except psutil.NoSuchProcess:
+                        logging.warning("No such process found")
+
+                    process.terminate()
+                    try:
+                        process.wait(timeout=5)
+                    except subprocess.TimeoutExpired:
+                        logging.warning("Process didn't exit in time. Killing...")
+                        process.kill()
+
+                stdout_thread.join()
+
+                # Read stderr output
+                stderr = process.stderr.read()
+                process.stderr.close()
+                if stderr:
+                    logging.error(f"Overlay error: {stderr.strip()}")
+            else:
+                # Need to request admin privileges
                 try:
-                    parent_process = psutil.Process(parent_pid)
-                    for child in parent_process.children(recursive=True):
-                        logging.info(f"Killing child process {child.pid}")
-                        child.terminate()  # 尝试正常终止子进程
-                        child.wait(timeout=5)  # 等待子进程退出
-                except psutil.NoSuchProcess:
-                    logging.warning("No such process found")
-
-                process.terminate()
-                try:
-                    process.wait(timeout=5)
-                except subprocess.TimeoutExpired:
-                    logging.warning("Process didn't exit in time. Killing...")
-                    process.kill()  # 强制终止
-
-            stdout_thread.join()
-
-            # 读取 stderr 输出
-            stderr = process.stderr.read()
-            process.stderr.close()
-            if stderr:
-                logging.error(f"Overlay error: {stderr.strip()}")
+                    logging.info("Starting overlay with admin privileges...")
+                    
+                    # Prepare arguments
+                    overlay_args = f"runoverlay \"{self.profile_path}\\Default Profile\" \"{self.profile_path}\\Default Profile.config\" --game:\"{self.game_path}\" \"--mods:Nottingham Ezreal\" --opts:none"
+                    
+                    # Request admin privileges using ShellExecuteW
+                    result = ctypes.windll.shell32.ShellExecuteW(
+                        None,
+                        "runas",
+                        os.path.join(os.getcwd(), "mod-tools.exe"),
+                        overlay_args,
+                        os.getcwd(),
+                        1
+                    )
+                    
+                    # ShellExecute returns value > 32 if successful
+                    if result <= 32:
+                        error_codes = {
+                            0: "Out of memory",
+                            2: "File not found",
+                            3: "Path not found",
+                            5: "Access denied",
+                            8: "Out of memory",
+                            11: "Invalid parameter",
+                            26: "Sharing violation",
+                            27: "File name too long",
+                            28: "Printer out of paper",
+                            29: "Write fault",
+                            30: "Read fault",
+                            31: "General failure",
+                            32: "Sharing violation"
+                        }
+                        error_msg = error_codes.get(result, f"Unknown error code: {result}")
+                        logging.error(f"Failed to start overlay: {error_msg}")
+                    else:
+                        logging.info("Successfully started overlay with admin privileges")
+                    
+                    # Wait for stop event
+                    while not stop_event.is_set():
+                        time.sleep(0.5)
+                    
+                    if stop_event.is_set():
+                        logging.info("Received stop signal, but cannot directly terminate admin process. Please close overlay window manually.")
+                    
+                except Exception as e:
+                    logging.error(f"Error starting overlay: {e}")
 
         overlay_thread = threading.Thread(target=run_command)
         overlay_thread.daemon = True
