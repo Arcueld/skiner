@@ -12,3 +12,10 @@
 1. 本项目严重依赖lol-skins项目, 确保网络通畅以clone该repo
 
 2. 需要装git,原因同上https://git-scm.com/ 
+
+3. mod-tools 在 runOverlay的时候需要管理员权限
+
+# TODO
+1. 皮肤预览 [x]
+
+2. 炫彩支持 [x]

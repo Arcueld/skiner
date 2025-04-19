@@ -253,5 +253,6 @@ class SkinWebServer:
     
     def open_browser(self):
         """打开浏览器访问Web页面"""
-        webbrowser.open(f'http://127.0.0.1:{targetPort}')
+        webBrowser = webbrowser.get(using='windows-default')  # 使用系统默认
+        webBrowser.open("http://127.0.0.1:18081")
         logging.info("已打开浏览器")
