@@ -5,9 +5,9 @@ import os
 import time
 import subprocess
 import shutil
+import globals
 
-from tools import tools
-from tools import modTools
+from tools import *
 from web_server import SkinWebServer
 from champion_monitor import ChampionMonitor
 from game_api import GameAPI
@@ -21,6 +21,13 @@ requests.packages.urllib3.disable_warnings()
 logging.basicConfig(format='%(asctime)s - %(levelname)s - %(message)s', level=logging.INFO)
 
 ### 初始化
+globals.is_latest = checkIsLatestVersion()
+if(not globals.is_latest):
+    # 如果不是最新版本 更新皮肤相关数据
+    t = threading.Thread(target=updateSkin)
+    t.start()
+
+
 
 # 创建必要的目录
 if not os.path.exists("installed"):
@@ -139,7 +146,7 @@ except Exception as e:
 try:
     game_api = GameAPI()
 except Exception as e:
-    exit(f"先开游戏 {e}")
+    exit(f"GameAPI对象创建失败: {e}")
 
 # 加载皮肤数据
 normal_tools = tools()

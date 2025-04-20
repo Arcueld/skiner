@@ -4,11 +4,25 @@ import psutil
 import subprocess
 import threading
 import time
-import selectors
 import ctypes
+import requests
+import json
+import time
+import globals
 
+requests.packages.urllib3.disable_warnings() 
+# 设置日志格式
+logging.basicConfig(format='%(asctime)s - %(levelname)s - %(message)s', level=logging.INFO)
 
+from concurrent.futures import ThreadPoolExecutor, as_completed
+from tqdm import tqdm
 from ctypes import wintypes
+
+SKINS_JSON_PATH = "skins.json"
+SAVE_DIR = "id_skins"
+MAX_WORKERS = 32
+RETRIES = 5
+TIMEOUT = 10
 
 class tools:
 
@@ -276,3 +290,152 @@ class modTools:
             logging.info("Overlay process completed")
 
         return overlay_thread, stop_event
+    
+
+def checkIsLatestVersion():
+    logging.info("检查lol版本, 判断是否需要更新皮肤数据...")
+    version = requests.get("https://ddragon.leagueoflegends.com/api/versions.json").json()[0]
+
+    try:
+        with open("version", "r") as f:
+            current_version = f.read().strip()
+
+        if current_version != version:
+            logging.info(f"当前版本: {current_version}，最新版本: {version}")
+            return False
+        else:
+            logging.info("当前版本已是最新")
+            return True
+    except:
+        
+        with open("version", "w") as f:
+            f.write(version)
+        return False # 也返回false 方便初始化
+
+
+def sync_skinsId(output_path=SKINS_JSON_PATH, max_workers=MAX_WORKERS):
+    """
+    同步皮肤数据
+    """
+    # 加载本地已有数据
+    if os.path.exists(output_path):
+        with open(output_path, "r", encoding="utf-8") as f:
+            local_data = json.load(f)
+    else:
+        local_data = {}
+
+    # 获取最新版本号
+    version = requests.get("https://ddragon.leagueoflegends.com/api/versions.json").json()[0]
+
+    # 获取所有英雄列表
+    champion_list_url = f"https://ddragon.leagueoflegends.com/cdn/{version}/data/en_US/champion.json"
+    champion_list = requests.get(champion_list_url).json()["data"]
+    champion_keys = list(champion_list.keys())
+
+    def fetch_skins_if_new_added(champion_key, retries=5, delay=1):
+        """
+        获取单个英雄皮肤信息，判断是否有新增皮肤（基于 skin id）
+        """
+        url = f"https://ddragon.leagueoflegends.com/cdn/{version}/data/en_US/champion/{champion_key}.json"
+        for attempt in range(retries):
+            try:
+                response = requests.get(url, timeout=10)
+                response.raise_for_status()
+                data = response.json()["data"][champion_key]
+            
+                # 跳过原皮
+                new_skins = [
+                    {"id": skin["id"], "name": skin["name"], "num": skin["num"]}
+                    for skin in data["skins"]  
+                    if skin["num"] != 0
+
+                ]
+                # 差量判断逻辑
+                local_skins = local_data.get(champion_key, [])
+                local_ids = {skin["id"] for skin in local_skins}
+                new_ids = {skin["id"] for skin in new_skins}
+                if not new_ids.issubset(local_ids):  # 有新增
+                    return champion_key, new_skins
+                else:
+                    return champion_key, None  # 无新增
+            except Exception as e:
+                if attempt < retries - 1:
+                    time.sleep(delay)
+                else:
+                    return champion_key, f"Error: {str(e)}"
+
+    result = local_data.copy()
+
+    with ThreadPoolExecutor(max_workers=max_workers) as executor:
+        futures = [executor.submit(fetch_skins_if_new_added, key) for key in champion_keys]
+        for future in tqdm(as_completed(futures), total=len(futures), desc="Checking skins"):
+            champ_key, skins = future.result()
+            if isinstance(skins, list):
+                result[champ_key] = skins
+            elif skins is None:
+                pass
+            else:
+                logging.warning(f"{champ_key} failed: {skins}")
+
+    with open(output_path, "w", encoding="utf-8") as f:
+        json.dump(result, f, ensure_ascii=False, indent=2)
+
+    logging.info(f"皮肤id更新完毕，共 {len(result)} 个英雄")
+
+def download_all_skins(skins_json_path=SKINS_JSON_PATH, save_dir=SAVE_DIR, max_workers=MAX_WORKERS):
+    os.makedirs(save_dir, exist_ok=True)
+
+    with open(skins_json_path, "r", encoding="utf-8") as f:
+        skins_data = json.load(f)
+
+    tasks = []
+    skipped = 0
+
+    for champion_key, skins in skins_data.items():
+        for skin in skins:
+            skin_id = skin["id"]
+            skin_num = skin["num"]
+            save_path = os.path.join(save_dir, f"{skin_id}.jpg")
+            if os.path.exists(save_path):
+                skipped += 1
+                continue  
+            tasks.append((champion_key, skin_id, skin_num))
+
+    logging.info(f"{skipped} skins already downloaded. {len(tasks)} skins to download.")
+
+    def download_skin(champion_key, skin_id, skin_num):
+        url = f"https://ddragon.leagueoflegends.com/cdn/img/champion/splash/{champion_key}_{skin_num}.jpg"
+        save_path = os.path.join(save_dir, f"{skin_id}.jpg")
+
+        for attempt in range(RETRIES):
+            try:
+                resp = requests.get(url, timeout=TIMEOUT)
+                if resp.status_code == 200:
+                    with open(save_path, "wb") as f:
+                        f.write(resp.content)
+                    return True
+                time.sleep(1)
+            except Exception:
+                time.sleep(1)
+        return False
+
+    with ThreadPoolExecutor(max_workers=max_workers) as executor:
+        future_to_task = {
+            executor.submit(download_skin, champion_key, skin_id, skin_num): (champion_key, skin_id)
+            for champion_key, skin_id, skin_num in tasks
+        }
+
+        for future in tqdm(as_completed(future_to_task), total=len(future_to_task), desc="Downloading skins"):
+            champion_key, skin_id = future_to_task[future]
+            try:
+                success = future.result()
+                if not success:
+                    pass 
+            except Exception as e:
+                logging.error(f"[!] Exception for {champion_key}:{skin_id} -> {e}")
+
+    logging.info("All new skins downloaded.")
+
+def updateSkin():
+    sync_skinsId()
+    download_all_skins()
