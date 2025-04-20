@@ -46,19 +46,29 @@ class ChampionMonitor:
                     if champion_alias != None and champion_alias != last_champion:
                         last_champion = champion_alias
                         
-                        # 不区分大小写
-                        if champion_alias.lower() in (k.lower() for k in self.skin_dict):
-                            available_skins = self.skin_dict[champion_alias]
-                            logging.info(f"找到 {len(available_skins)} 个 {champion_alias} 的皮肤: {available_skins}")
-                            
-                            # 更新Web服务器数据
-                            self.web_server.update_champion_data(champion_alias, available_skins)
-                            
-                            # 只有第一次才打开浏览器
-                            if not browser_opened:
-                                self.web_server.open_browser()
-                                browser_opened = True
-                        else:
+                        print(champion_alias.lower())
+                        # 规范化英雄名称，删除 '、. 和空格，并转为小写进行比较
+                        normalized_champion = champion_alias.replace("'", "").replace(".", "").replace(" ", "").lower()
+                        
+                        # 查找匹配的英雄
+                        found = False
+                        for k in self.skin_dict:
+                            normalized_k = k.replace("'", "").replace(".", "").replace(" ", "").lower()
+                            if normalized_champion == normalized_k:
+                                available_skins = self.skin_dict[k]  # 使用原始键获取皮肤列表
+                                logging.info(f"找到 {len(available_skins)} 个 {champion_alias} 的皮肤: {available_skins}")
+                                
+                                # 更新Web服务器数据
+                                self.web_server.update_champion_data(champion_alias, available_skins)
+                                
+                                # 只有第一次才打开浏览器
+                                if not browser_opened:
+                                    self.web_server.open_browser()
+                                    browser_opened = True
+                                found = True
+                                break
+                        
+                        if not found:
                             logging.warning(f"未找到英雄 {champion_alias} 的皮肤")
                 else:
                     # 如果没有选择英雄，重置上一次英雄记录
