@@ -46,13 +46,17 @@ class ChampionMonitor:
                     if champion_alias != None and champion_alias != last_champion:
                         last_champion = champion_alias
                         
-                        print(champion_alias.lower())
                         # 规范化英雄名称，删除 '、. 和空格，并转为小写进行比较
                         normalized_champion = champion_alias.replace("'", "").replace(".", "").replace(" ", "").lower()
+                        
+                        # 特殊处理：Nunu 和 Willump
+                        if normalized_champion == "nunu":
+                            normalized_champion = "nunu&willump"
                         
                         # 查找匹配的英雄
                         found = False
                         for k in self.skin_dict:
+                            
                             normalized_k = k.replace("'", "").replace(".", "").replace(" ", "").lower()
                             if normalized_champion == normalized_k:
                                 available_skins = self.skin_dict[k]  # 使用原始键获取皮肤列表

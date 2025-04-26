@@ -80,7 +80,7 @@ class tools:
         for champion in os.listdir(skins_path):
             champion_path = os.path.join(skins_path, champion)
             if os.path.isdir(champion_path):
-                # 处理英雄名称，删除 '、. 和空格
+                # 处理英雄名称，删除 '、. 和空格 转小写
                 normalized_champion = champion.replace("'", "").replace(".", "").replace(" ", "")
                 skins_dict[normalized_champion] = []
                 for skin in os.listdir(champion_path):
@@ -128,7 +128,7 @@ class modTools:
         ).communicate()
 
         if err:
-            logging.error(err.decode("gbk"))
+            logging.error(err.decode())
             return False
         else:
             logging.info(out.decode("gbk"))
