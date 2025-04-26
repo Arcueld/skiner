@@ -128,7 +128,7 @@ class modTools:
         ).communicate()
 
         if err:
-            logging.err(err.decode("gbk"))
+            logging.error(err.decode("gbk"))
             return False
         else:
             logging.info(out.decode("gbk"))
