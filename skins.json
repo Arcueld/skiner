@@ -604,6 +604,11 @@
       "id": "432035",
       "name": "T1 Bard",
       "num": 35
+    },
+    {
+      "id": "432037",
+      "name": "Spirit Blossom Bard",
+      "num": 37
     }
   ],
   "Aatrox": [
@@ -1550,6 +1555,11 @@
       "id": "22067",
       "name": "Infernal Ashe",
       "num": 67
+    },
+    {
+      "id": "22076",
+      "name": "Spirit Blossom Ashe",
+      "num": 76
     }
   ],
   "DrMundo": [
@@ -2391,6 +2401,11 @@
       "id": "39045",
       "name": "Porcelain Irelia",
       "num": 45
+    },
+    {
+      "id": "39055",
+      "name": "Spirit Blossom Irelia",
+      "num": 55
     }
   ],
   "Jax": [
@@ -2572,6 +2587,11 @@
       "id": "427020",
       "name": "Astronaut Ivern",
       "num": 20
+    },
+    {
+      "id": "427030",
+      "name": "Spirit Blossom Ivern",
+      "num": 30
     }
   ],
   "Hecarim": [
@@ -4091,6 +4111,11 @@
       "id": "99061",
       "name": "Faerie Court Lux",
       "num": 61
+    },
+    {
+      "id": "99070",
+      "name": "Prestige Spirit Blossom Lux",
+      "num": 70
     }
   ],
   "Malphite": [
@@ -7541,6 +7566,11 @@
       "id": "110053",
       "name": "Empyrean Varus",
       "num": 53
+    },
+    {
+      "id": "110060",
+      "name": "Spirit Blossom Varus",
+      "num": 60
     }
   ],
   "Swain": [
@@ -8468,6 +8498,11 @@
       "id": "29055",
       "name": "Cheddar Chief Twitch",
       "num": 55
+    },
+    {
+      "id": "29064",
+      "name": "Pool Party Twitch",
+      "num": 64
     }
   ],
   "Velkoz": [
@@ -9052,6 +9087,11 @@
       "id": "143055",
       "name": "Blood Moon Zyra",
       "num": 55
+    },
+    {
+      "id": "143064",
+      "name": "Spirit Blossom Zyra",
+      "num": 64
     }
   ],
   "Zoe": [
