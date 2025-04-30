@@ -302,6 +302,8 @@ def checkIsLatestVersion():
 
         if current_version != version:
             logging.info(f"当前版本: {current_version}，最新版本: {version}")
+            with open("version", "w") as f:
+                f.write(version)
             return False
         else:
             logging.info("当前版本已是最新")
