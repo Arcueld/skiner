@@ -4,6 +4,7 @@ import requests
 import subprocess
 import psutil
 import os
+import time
 
 class GameAPI:
     def __init__(self):
@@ -16,9 +17,16 @@ class GameAPI:
 
         target_name = "LeagueClientUx.exe"
         cmdline = None
-        for proc in psutil.process_iter(['name', 'cmdline']):
-            if proc.info['name'] == target_name:
-                cmdline = " ".join(proc.info['cmdline'])
+
+        for i in range(5):
+            for proc in psutil.process_iter(['name', 'cmdline']):
+                if proc.info['name'] == target_name:
+                    cmdline = " ".join(proc.info['cmdline'])
+            if(cmdline != None):
+                break
+            else:
+                logging.info("未找到LeagueClientUx.exe，正在重试...")
+                time.sleep(2)
 
         app_port = cmdline.split('--app-port=')[-1].split(' ')[0].strip('\"') 
         auth_token = cmdline.split('--remoting-auth-token=')[-1].split(' ')[0].strip('\"') 
