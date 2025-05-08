@@ -67,7 +67,7 @@ class SkinWebServer:
             .replace("DrMundo","Dr. Mundo").replace("JarvanIV","Jarvan IV").replace("KhaZix","Kha'Zix").replace("KogMaw","Kog'Maw") \
             .replace("LeeSin","Lee Sin").replace("MasterYi","Master Yi").replace("Miss Fortune","MissFortune") \
             .replace("Nunu","Nunu & Willump").replace("RekSai","Rek'Sai").replace("RenataGlasc","Renata Glasc").replace("TahmKench","Tahm Kench") \
-            .replace("TwistedFate","Twisted Fate").replace("VelKoz","Vel'Koz").replace("XinZhao","Xin Zhao")
+            .replace("VelKoz","Vel'Koz").replace("XinZhao","Xin Zhao")
             
             # 导入并应用皮肤
             skin_path = f"skins\\{self.current_champion}\\{selected_skin}.zip"
