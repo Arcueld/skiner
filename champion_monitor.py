@@ -48,10 +48,11 @@ class ChampionMonitor:
                         
                         # 规范化英雄名称，删除 '、. 和空格，并转为小写进行比较
                         normalized_champion = champion_alias.replace("'", "").replace(".", "").replace(" ", "").lower()
+                        print("------------------------------")
+                        print(normalized_champion)
+                        print("------------------------------")
                         
-                        # 特殊处理：Nunu 和 Willump
-                        if normalized_champion == "nunu":
-                            normalized_champion = "nunu&willump"
+
                         
                         # 查找匹配的英雄
                         found = False
