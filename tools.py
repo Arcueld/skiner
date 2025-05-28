@@ -80,8 +80,13 @@ class tools:
         for champion in os.listdir(skins_path):
             champion_path = os.path.join(skins_path, champion)
             if os.path.isdir(champion_path):
-                # 处理英雄名称，删除 '、. 和空格 转小写
-                normalized_champion = champion.replace("'", "").replace(".", "").replace(" ", "")
+                # 特殊处理 Nunu & Willump
+                if champion == "Nunu & Willump":
+                    normalized_champion = "Nunu"
+                else:
+                    # 处理英雄名称，删除 '、. 和空格 转小写
+                    normalized_champion = champion.replace("'", "").replace(".", "").replace(" ", "")
+                
                 skins_dict[normalized_champion] = []
                 for skin in os.listdir(champion_path):
                     # TODO: 暂时忽略炫彩的处理
@@ -95,6 +100,7 @@ class tools:
                             skin_name = skin[:-4]
                         skins_dict[normalized_champion].append(skin_name)
         
+        logging.info(f"皮肤目录扫描完成，共发现 {len(skins_dict)} 个英雄")
         return skins_dict
     
     

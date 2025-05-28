@@ -9,6 +9,47 @@ class ChampionMonitor:
         self.skin_dict = skin_dict  
         self.running = False
         self.monitor_thread = None
+        
+        # 特殊英雄名称映射
+        self.champion_name_mapping = {
+            "aurelionsol": "Aurelion Sol",
+            "belveth": "Bel'Veth",
+            "chogath": "Cho'Gath",
+            "khazix": "Kha'Zix",
+            "drmundo": "Dr. Mundo",
+            "jarvaniv": "Jarvan IV",
+            "kogmaw": "Kog'Maw",
+            "leesin": "Lee Sin",
+            "masteryi": "Master Yi",
+            "missfortune": "Miss Fortune",
+            "nunu": "Nunu & Willump",
+            "reksai": "Rek'Sai",
+            "renataglasc": "Renata Glasc",
+            "tahmkench": "Tahm Kench",
+            "velkoz": "Vel'Koz",
+            "xinzhao": "Xin Zhao",
+            "Velkoz": "Vel'Koz"
+        }
+    
+    def normalize_champion_name(self, name):
+        """规范化英雄名称，用于比较"""
+        if not name:
+            return None
+        # 特殊处理 Nunu & Willump
+        if name == "Nunu & Willump":
+            return "Nunu"
+        # 特殊处理 Vel'Koz
+        if name == "Vel'Koz":
+            return "Velkoz"
+        # 删除所有特殊字符并转为小写
+        return ''.join(c.lower() for c in name if c.isalnum())
+    
+    def get_original_champion_name(self, normalized_name):
+        """获取原始英雄名称"""
+        # 检查是否在特殊映射中
+        if normalized_name in self.champion_name_mapping:
+            return self.champion_name_mapping[normalized_name]
+        return None
     
     def start_monitoring(self):
         """开始监控英雄选择"""
@@ -32,8 +73,8 @@ class ChampionMonitor:
     
     def _monitor_loop(self):
         """监控循环"""
-        browser_opened = False  # 添加标志，记录浏览器是否已打开
-        last_champion = None  # 记录上一次检测到的英雄
+        browser_opened = False
+        last_champion = None
         
         while self.running:
             try:
@@ -43,24 +84,19 @@ class ChampionMonitor:
                     champion_alias = self.game_api.get_champion_alias(champion_id)
                     
                     # 只有当英雄变化时才更新数据
-                    if champion_alias != None and champion_alias != last_champion:
+                    if champion_alias and champion_alias != last_champion:
                         last_champion = champion_alias
                         
-                        # 规范化英雄名称，删除 '、. 和空格，并转为小写进行比较
-                        normalized_champion = champion_alias.replace("'", "").replace(".", "").replace(" ", "").lower()
-                        print("------------------------------")
-                        print(normalized_champion)
-                        print("------------------------------")
-                        
-
+                        # 规范化英雄名称
+                        normalized_champion = self.normalize_champion_name(champion_alias)
                         
                         # 查找匹配的英雄
                         found = False
-                        for k in self.skin_dict:
+                        for skin_champion in self.skin_dict:
+                            normalized_skin_champion = self.normalize_champion_name(skin_champion)
                             
-                            normalized_k = k.replace("'", "").replace(".", "").replace(" ", "").lower()
-                            if normalized_champion == normalized_k:
-                                available_skins = self.skin_dict[k]  # 使用原始键获取皮肤列表
+                            if normalized_champion == normalized_skin_champion:
+                                available_skins = self.skin_dict[skin_champion]
                                 logging.info(f"找到 {len(available_skins)} 个 {champion_alias} 的皮肤: {available_skins}")
                                 
                                 # 更新Web服务器数据

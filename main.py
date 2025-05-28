@@ -6,11 +6,49 @@ import time
 import subprocess
 import shutil
 import globals
+import signal
+import psutil
+import sys
 
 from tools import *
 from web_server import SkinWebServer
 from champion_monitor import ChampionMonitor
 from game_api import GameAPI
+
+def cleanup_processes():
+    """清理所有相关进程"""
+    current_process = psutil.Process()
+    try:
+        # 获取所有子进程
+        children = current_process.children(recursive=True)
+        for child in children:
+            try:
+                logging.info(f"正在终止进程: {child.pid}")
+                child.terminate()
+            except psutil.NoSuchProcess:
+                pass
+            except Exception as e:
+                logging.error(f"终止进程 {child.pid} 时出错: {e}")
+        
+        # 等待所有子进程结束
+        gone, alive = psutil.wait_procs(children, timeout=3)
+        for p in alive:
+            try:
+                p.kill()
+            except psutil.NoSuchProcess:
+                pass
+    except Exception as e:
+        logging.error(f"清理进程时出错: {e}")
+
+def signal_handler(signum, frame):
+    """处理终止信号"""
+    logging.info("收到终止信号，正在清理...")
+    cleanup_processes()
+    sys.exit(0)
+
+# 注册信号处理器
+signal.signal(signal.SIGINT, signal_handler)
+signal.signal(signal.SIGTERM, signal_handler)
 
 '''
     config 
