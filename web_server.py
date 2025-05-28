@@ -3,6 +3,9 @@ import logging
 import threading
 import webbrowser
 import json
+import atexit
+import signal
+import psutil
 from flask import Flask, render_template, request, jsonify, send_file
 
 targetPort = None
@@ -14,6 +17,9 @@ class SkinWebServer:
         self.current_champion = None
         self.available_skins = []
         self.skins_data = self.load_skins_json()
+        self.server_thread = None
+        self.overlay_thread = None
+        self.overlay_stop_event = None
         
         # 注册路由
         self.register_routes()
@@ -22,6 +28,51 @@ class SkinWebServer:
             os.makedirs("templates")
         
         self.create_template()
+        
+        # 注册退出处理
+        atexit.register(self.cleanup)
+        signal.signal(signal.SIGTERM, self.signal_handler)
+        signal.signal(signal.SIGINT, self.signal_handler)
+    
+    def signal_handler(self, signum, frame):
+        """处理终止信号"""
+        logging.info("收到终止信号，正在清理...")
+        self.cleanup()
+        os._exit(0)
+    
+    def cleanup(self):
+        """清理所有相关进程"""
+        logging.info("正在清理Web服务器相关进程...")
+        
+        # 停止overlay
+        if self.overlay_stop_event:
+            self.overlay_stop_event.set()
+            if self.overlay_thread:
+                self.overlay_thread.join(timeout=2)
+        
+        # 获取当前进程
+        current_process = psutil.Process()
+        try:
+            # 获取所有子进程
+            children = current_process.children(recursive=True)
+            for child in children:
+                try:
+                    logging.info(f"正在终止进程: {child.pid}")
+                    child.terminate()
+                except psutil.NoSuchProcess:
+                    pass
+                except Exception as e:
+                    logging.error(f"终止进程 {child.pid} 时出错: {e}")
+            
+            # 等待所有子进程结束
+            gone, alive = psutil.wait_procs(children, timeout=3)
+            for p in alive:
+                try:
+                    p.kill()
+                except psutil.NoSuchProcess:
+                    pass
+        except Exception as e:
+            logging.error(f"清理进程时出错: {e}")
     
     def load_skins_json(self):
         """加载skins.json文件中的皮肤数据"""
@@ -69,23 +120,23 @@ class SkinWebServer:
             if not success:
                 # 处理特殊英雄名称
                 processed_champion = self.current_champion.replace("AurelionSol","Aurelion Sol").replace("BelVeth","Bel'Veth").replace("ChoGath","Cho'Gath").replace("KhaZix","Kha'Zix").replace("Rakan","Rakan") \
-                .replace("DrMundo","Dr. Mundo").replace("JarvanIV","Jarvan IV").replace("KhaZix","Kha'Zix").replace("KogMaw","Kog'Maw") \
+                .replace("DrMundo","Dr. Mundo").replace("JarvanIV","Jarvan IV").replace("Khazix","Kha'Zix").replace("KogMaw","Kog'Maw") \
                 .replace("LeeSin","Lee Sin").replace("MasterYi","Master Yi").replace("Miss Fortune","MissFortune") \
                 .replace("Nunu","Nunu & Willump").replace("RekSai","Rek'Sai").replace("RenataGlasc","Renata Glasc").replace("TahmKench","Tahm Kench") \
-                .replace("VelKoz","Vel'Koz").replace("XinZhao","Xin Zhao")
+                .replace("Velkoz","Vel'Koz").replace("XinZhao","Xin Zhao").replace("KSante","K'Sante")
                 
                 # 再次尝试导入
                 skin_path = f"skins\\{processed_champion}\\{selected_skin}.zip"
                 success = self.modtools.importMod(skin_path)
                 if not success:
-                    return jsonify({"success": False, "message": "导入皮肤失败"})
+                    return jsonify({"success": False, "message": f"导入皮肤失败: {skin_path}"})
             
             success = self.modtools.saveProfile(selected_skin)
             if not success:
                 return jsonify({"success": False, "message": "保存配置文件失败"})
             
             # 启动overlay
-            runOverlaythread, runOverlaythread_stop_event = self.modtools.runOverlay()
+            self.overlay_thread, self.overlay_stop_event = self.modtools.runOverlay()
             
             return jsonify({"success": True, "message": f"已应用皮肤: {selected_skin}"})
         
@@ -438,6 +489,7 @@ class SkinWebServer:
     
     def start(self, port=5000):
         """在新线程中启动Web服务器"""
+        global targetPort
         targetPort = port
         def run_server():
             import logging as flask_logging
@@ -445,11 +497,11 @@ class SkinWebServer:
             # 修改为threaded=True确保请求能被正确处理
             self.app.run(host='127.0.0.1', port=port, debug=False, threaded=True, use_reloader=False)
     
-        server_thread = threading.Thread(target=run_server)
-        server_thread.daemon = True
-        server_thread.start()
+        self.server_thread = threading.Thread(target=run_server)
+        self.server_thread.daemon = True
+        self.server_thread.start()
         logging.info(f"Web服务器已启动，访问 http://127.0.0.1:{targetPort}")
-        return server_thread
+        return self.server_thread
     
     def open_browser(self):
         """打开浏览器访问Web页面"""
