@@ -153,7 +153,6 @@ class SkinWebServer:
                 return jsonify({"error": f"Skin ID not found for {skin_name}"}), 404
             
             preview_path = os.path.join(os.getcwd(), "id_skins", f"{skin_id}.jpg")
-            logging.info(f"Looking for preview at: {preview_path}")
             
             if os.path.exists(preview_path):
                 return send_file(preview_path, mimetype='image/jpeg')
