@@ -96,17 +96,25 @@ class ChampionMonitor:
                             normalized_skin_champion = self.normalize_champion_name(skin_champion)
                             
                             if normalized_champion == normalized_skin_champion:
-                                available_skins = self.skin_dict[skin_champion]
-                                logging.info(f"找到 {len(available_skins)} 个 {champion_alias} 的皮肤: {available_skins}")
+                                # 过滤掉原皮
+                                available_skins = [
+                                    skin for skin in self.skin_dict[skin_champion]
+                                    if skin.lower() != champion_alias.lower()
+                                ]
                                 
-                                # 更新Web服务器数据
-                                self.web_server.update_champion_data(champion_alias, available_skins)
-                                
-                                # 只有第一次才打开浏览器
-                                if not browser_opened:
-                                    self.web_server.open_browser()
-                                    browser_opened = True
-                                found = True
+                                if available_skins:
+                                    logging.info(f"找到 {len(available_skins)} 个 {champion_alias} 的皮肤: {available_skins}")
+                                    
+                                    # 更新Web服务器数据
+                                    self.web_server.update_champion_data(champion_alias, available_skins)
+                                    
+                                    # 只有第一次才打开浏览器
+                                    if not browser_opened:
+                                        self.web_server.open_browser()
+                                        browser_opened = True
+                                    found = True
+                                else:
+                                    logging.warning(f"英雄 {champion_alias} 没有可用皮肤")
                                 break
                         
                         if not found:

@@ -182,146 +182,321 @@ class SkinWebServer:
 <!DOCTYPE html>
 <html>
 <head>
-    <title>英雄联盟皮肤选择器</title>
+    <title>League of Legends Skin Selector</title>
     <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
     <style>
+        :root {
+            --primary-color: #1a73e8;
+            --secondary-color: #4285f4;
+            --background-color: #f8f9fa;
+            --card-background: #ffffff;
+            --text-primary: #202124;
+            --text-secondary: #5f6368;
+            --success-color: #34a853;
+            --error-color: #ea4335;
+            --border-radius: 8px;
+            --shadow: 0 2px 4px rgba(0,0,0,0.1);
+            --transition: all 0.3s ease;
+            --preview-height: 600px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
         body {
-            font-family: Arial, sans-serif;
-            max-width: 800px;
+            font-family: 'Roboto', sans-serif;
+            background-color: var(--background-color);
+            color: var(--text-primary);
+            line-height: 1.6;
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1200px;
             margin: 0 auto;
             padding: 20px;
-            background-color: #f0f0f0;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
         }
-        h1 {
-            color: #1a1a1a;
+
+        .left-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .right-panel {
+            position: sticky;
+            top: 20px;
+            height: calc(100vh - 40px);
+        }
+
+        .header {
+            text-align: center;
+            padding: 20px;
+            background: var(--card-background);
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            grid-column: 1 / -1;
+        }
+
+        .header h1 {
+            color: var(--primary-color);
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .champion-info {
+            background: var(--card-background);
+            border-radius: var(--border-radius);
+            padding: 20px;
+            box-shadow: var(--shadow);
             text-align: center;
         }
-        .champion-info {
-            background-color: #fff;
-            border-radius: 5px;
-            padding: 15px;
-            margin-bottom: 20px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+
+        .champion-info h2 {
+            color: var(--text-primary);
+            font-size: 1.8em;
+            margin-bottom: 10px;
         }
+
+        .preview-container {
+            background: var(--card-background);
+            border-radius: var(--border-radius);
+            padding: 20px;
+            box-shadow: var(--shadow);
+            text-align: center;
+            height: var(--preview-height);
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        .preview-container h3 {
+            color: var(--text-primary);
+            margin-bottom: 20px;
+        }
+
+        .preview-content {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        .preview-image {
+            max-width: 100%;
+            max-height: calc(var(--preview-height) - 100px);
+            object-fit: contain;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+        }
+
+        .no-preview {
+            padding: 40px;
+            background: var(--background-color);
+            border-radius: var(--border-radius);
+            color: var(--text-secondary);
+            font-size: 1.2em;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
         .skins-container {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-            gap: 15px;
+            gap: 20px;
+            overflow-y: auto;
+            max-height: calc(100vh - 400px);
+            padding-right: 10px;
         }
+
+        .skins-container::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .skins-container::-webkit-scrollbar-track {
+            background: var(--background-color);
+            border-radius: 4px;
+        }
+
+        .skins-container::-webkit-scrollbar-thumb {
+            background: var(--secondary-color);
+            border-radius: 4px;
+        }
+
         .skin-item {
-            background-color: #fff;
-            border-radius: 5px;
-            padding: 10px;
+            background: var(--card-background);
+            border-radius: var(--border-radius);
+            padding: 15px;
             text-align: center;
             cursor: pointer;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-            transition: transform 0.2s;
+            transition: var(--transition);
+            box-shadow: var(--shadow);
+            border: 2px solid transparent;
         }
+
         .skin-item:hover {
             transform: translateY(-5px);
-            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+            border-color: var(--primary-color);
         }
+
         .skin-item.selected {
-            background-color: #e6f7ff;
-            border: 2px solid #1890ff;
+            background-color: #e8f0fe;
+            border-color: var(--primary-color);
         }
-        .status {
-            margin-top: 20px;
-            padding: 10px;
-            border-radius: 5px;
-            text-align: center;
-        }
-        .success {
-            background-color: #d4edda;
-            color: #155724;
-        }
-        .error {
-            background-color: #f8d7da;
-            color: #721c24;
-        }
-        #loading {
-            position: fixed;
-            top: 10px;
-            right: 10px;
-            background-color: #007bff;
-            color: white;
-            padding: 5px 10px;
-            border-radius: 3px;
-            display: none;
-        }
-        .preview-container {
-            background-color: #fff;
-            border-radius: 5px;
-            padding: 15px;
-            margin: 20px 0;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-            text-align: center;
-        }
-        .preview-image {
-            max-width: 100%;
-            max-height: 400px;
-            display: block;
-            margin: 0 auto;
-        }
-        .no-preview {
-            padding: 50px;
-            background-color: #f8f9fa;
-            color: #6c757d;
-            text-align: center;
-            border-radius: 5px;
-        }
+
         .action-buttons {
-            margin-top: 20px;
+            margin: 20px 0;
             text-align: center;
         }
+
         .apply-button {
-            background-color: #28a745;
+            background-color: var(--success-color);
             color: white;
             border: none;
-            padding: 10px 20px;
-            border-radius: 5px;
+            padding: 12px 30px;
+            border-radius: var(--border-radius);
             cursor: pointer;
-            font-size: 16px;
-            transition: background-color 0.2s;
+            font-size: 1.1em;
+            font-weight: 500;
+            transition: var(--transition);
+            box-shadow: var(--shadow);
         }
+
         .apply-button:hover {
-            background-color: #218838;
+            background-color: #2d9249;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
         }
+
         .apply-button:disabled {
-            background-color: #6c757d;
+            background-color: var(--text-secondary);
             cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .status {
+            margin: 20px auto;
+            padding: 15px;
+            border-radius: var(--border-radius);
+            text-align: center;
+            max-width: 600px;
+            display: none;
+        }
+
+        .status.success {
+            background-color: #e6f4ea;
+            color: var(--success-color);
+            border: 1px solid var(--success-color);
+        }
+
+        .status.error {
+            background-color: #fce8e6;
+            color: var(--error-color);
+            border: 1px solid var(--error-color);
+        }
+
+        #loading {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background-color: var(--primary-color);
+            color: white;
+            padding: 10px 20px;
+            border-radius: var(--border-radius);
+            display: none;
+            box-shadow: var(--shadow);
+            z-index: 1000;
+        }
+
+        @media (max-width: 1024px) {
+            .container {
+                grid-template-columns: 1fr;
+            }
+
+            .right-panel {
+                position: static;
+                height: auto;
+            }
+
+            .preview-container {
+                height: 400px;
+            }
+
+            .skins-container {
+                max-height: none;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+
+            .header h1 {
+                font-size: 2em;
+            }
+
+            .preview-container {
+                height: 300px;
+            }
+
+            .preview-image {
+                max-height: 250px;
+            }
         }
     </style>
 </head>
 <body>
     <div id="loading">Loading...</div>
-    <h1>League of Legends Skin Selector</h1>
-    
-    <div class="champion-info">
-        <h2>Current Champion: <span id="champion-name">{{ champion }}</span></h2>
-    </div>
-    
-    <div class="preview-container">
-        <h3>Skin Preview</h3>
-        <div id="preview-content" class="no-preview">
-            Select a skin to preview
+    <div class="container">
+        <div class="header">
+            <h1>League of Legends Skin Selector</h1>
         </div>
-    </div>
-    
-    <div class="action-buttons">
-        <button id="apply-button" class="apply-button" disabled>Apply Selected Skin</button>
-    </div>
-    
-    <h3>Available Skins:</h3>
-    <div id="skins-container" class="skins-container">
-        {% for skin in skins %}
-        <div class="skin-item" data-skin="{{ skin }}">
-            {{ skin }}
+        
+        <div class="left-panel">
+            <div class="champion-info">
+                <h2>Current Champion: <span id="champion-name">{{ champion }}</span></h2>
+            </div>
+            
+            <div class="skins-container">
+                {% for skin in skins %}
+                <div class="skin-item" data-skin="{{ skin }}">
+                    {{ skin }}
+                </div>
+                {% endfor %}
+            </div>
         </div>
-        {% endfor %}
+        
+        <div class="right-panel">
+            <div class="preview-container">
+                <h3>Skin Preview</h3>
+                <div id="preview-content" class="preview-content no-preview">
+                    Select a skin to preview
+                </div>
+            </div>
+            
+            <div class="action-buttons">
+                <button id="apply-button" class="apply-button" disabled>Apply Selected Skin</button>
+            </div>
+        </div>
+        
+        <div id="status" class="status"></div>
     </div>
-    
-    <div id="status" class="status" style="display: none;"></div>
     
     <script>
         // Store skin data from server
@@ -378,7 +553,7 @@ class SkinWebServer:
         
         function resetPreview() {
             const previewContent = document.getElementById('preview-content');
-            previewContent.className = 'no-preview';
+            previewContent.className = 'preview-content no-preview';
             previewContent.innerHTML = 'Select a skin to preview';
             currentSelectedSkin = null;
             document.getElementById('apply-button').disabled = true;
@@ -400,7 +575,7 @@ class SkinWebServer:
             });
             
             const previewContent = document.getElementById('preview-content');
-            previewContent.className = '';
+            previewContent.className = 'preview-content';
             previewContent.innerHTML = '<p>Loading preview...</p>';
             
             // Get current champion
@@ -414,7 +589,7 @@ class SkinWebServer:
                 previewContent.appendChild(img);
             };
             img.onerror = function() {
-                previewContent.className = 'no-preview';
+                previewContent.className = 'preview-content no-preview';
                 previewContent.innerHTML = 'Preview image not available';
             };
             

@@ -9,6 +9,8 @@ import globals
 import signal
 import psutil
 import sys
+from concurrent.futures import ThreadPoolExecutor
+from tqdm import tqdm
 
 from tools import *
 from web_server import SkinWebServer
@@ -65,33 +67,43 @@ if(not globals.is_latest):
     t = threading.Thread(target=updateSkin)
     t.start()
 
-
-
-# 创建必要的目录
-if not os.path.exists("installed"):
-    os.makedirs("installed")
-else:
-    for file in os.listdir("installed"):
-            file_path = os.path.join("installed", file)
-            try:
-                if os.path.isfile(file_path):
-                    os.unlink(file_path)
-                elif os.path.isdir(file_path):
-                    shutil.rmtree(file_path)
-                logging.info(f"已清理: {file_path}")
-            except Exception as e:
-                logging.error(f"清理文件失败: {file_path}, 错误: {e}")
-if not os.path.exists("profiles"):
-    os.makedirs("profiles")
+def is_repo_valid(repo_path):
+    """检查仓库是否完整有效"""
+    try:
+        # 检查必要的目录和文件是否存在
+        required_paths = [
+            os.path.join(repo_path, ".git"),
+            os.path.join(repo_path, "skins"),
+            os.path.join(repo_path, ".git", "HEAD"),
+            os.path.join(repo_path, ".git", "config")
+        ]
+        
+        for path in required_paths:
+            if not os.path.exists(path):
+                return False
+        
+        # 尝试获取HEAD提交
+        result = subprocess.run(
+            ["git", "-C", repo_path, "rev-parse", "HEAD"],
+            capture_output=True,
+            text=True,
+            check=False
+        )
+        
+        return result.returncode == 0 and result.stdout.strip()
+    except Exception as e:
+        logging.error(f"检查仓库完整性时出错: {e}")
+        return False
 
 def check_for_updates(temp_dir):
+    """检查远程仓库是否有更新"""
     logging.info("检查远程仓库是否有更新...")
     
-    # 如果临时目录已存在，先尝试获取最新的远程提交哈希
-    if os.path.exists(temp_dir) and os.path.exists(os.path.join(temp_dir, ".git")):
-        try:
+    try:
+        # 检查仓库是否完整有效
+        if os.path.exists(temp_dir) and is_repo_valid(temp_dir):
             # 获取远程最新提交
-            subprocess.run(["git", "-C", temp_dir, "fetch"], check=True)
+            subprocess.run(["git", "-C", temp_dir, "fetch"], check=True, capture_output=True)
             
             # 获取本地HEAD提交哈希
             local_hash = subprocess.check_output(
@@ -112,15 +124,25 @@ def check_for_updates(temp_dir):
             else:
                 logging.info("发现远程仓库有更新，需要同步")
                 return True
-        except Exception as e:
-            logging.warning(f"检查更新时出错: {e}")
+        else:
+            logging.info("临时仓库不存在或无效，需要执行完整同步")
+            # 如果目录存在但不完整，删除它
+            if os.path.exists(temp_dir):
+                try:
+                    shutil.rmtree(temp_dir)
+                    logging.info(f"已删除不完整的临时目录: {temp_dir}")
+                except Exception as e:
+                    logging.error(f"删除不完整的临时目录失败: {e}")
             return True
-    else:
-        logging.info("临时仓库不存在，需要执行完整同步")
+    except subprocess.CalledProcessError as e:
+        logging.error(f"Git命令执行失败: {e}")
+        return True
+    except Exception as e:
+        logging.error(f"检查更新时出错: {e}")
         return True
 
-# 同步skins目录
 def sync_skins_repo():
+    """同步skins目录"""
     repo_url = "https://github.com/darkseal-org/lol-skins.git"
     temp_dir = os.path.join(os.getcwd(), "_temp_repo")
     skins_dir = os.path.join(os.getcwd(), "skins")
@@ -132,24 +154,28 @@ def sync_skins_repo():
     logging.info("开始同步skins目录...")
     
     try:
+        # 确保临时目录存在
         os.makedirs(temp_dir, exist_ok=True)
         
-        if os.path.exists(os.path.join(temp_dir, ".git")):
+        # 克隆或更新仓库
+        if is_repo_valid(temp_dir):
             logging.info("更新已存在的仓库...")
-            subprocess.run(["git", "-C", temp_dir, "pull"], check=True)
+            subprocess.run(["git", "-C", temp_dir, "pull"], check=True, capture_output=True)
         else:
             logging.info(f"克隆仓库到临时目录: {temp_dir}...")
-            subprocess.run(["git", "clone", repo_url, temp_dir], check=True)
+            result = subprocess.run(["git", "clone", repo_url, temp_dir], check=True)
+            if result.returncode != 0:
+                raise subprocess.CalledProcessError(result.returncode, "git clone")
         
-        if not os.path.exists(skins_dir):
-            os.makedirs(skins_dir)
+        # 确保目标目录存在
+        os.makedirs(skins_dir, exist_ok=True)
         
         repo_skins_dir = os.path.join(temp_dir, "skins")
-        
         if not os.path.exists(repo_skins_dir):
             logging.error(f"源皮肤目录不存在: {repo_skins_dir}")
             return False
         
+        # 使用robocopy同步目录
         logging.info("同步skins目录内容...")
         result = subprocess.run([
             "robocopy", 
@@ -165,33 +191,44 @@ def sync_skins_repo():
         logging.info("skins目录同步完成")
         return True
     
+    except subprocess.CalledProcessError as e:
+        logging.error(f"命令执行失败: {e}")
+        if e.stdout:
+            logging.error(f"命令输出: {e.stdout.decode()}")
+        if e.stderr:
+            logging.error(f"错误输出: {e.stderr.decode()}")
+        return False
     except Exception as e:
         logging.error(f"同步过程中发生错误: {e}")
-        if os.path.exists(temp_dir):
-            shutil.rmtree(temp_dir, ignore_errors=True)
-            logging.info(f"已删除临时目录: {temp_dir}")
         return False
-    
 
 # 执行同步
 try:
     sync_result = sync_skins_repo()
+    if not sync_result:
+        logging.error("同步skins目录失败，程序退出")
+        sys.exit(1)
 except Exception as e:
     logging.error(f"同步skins目录失败: {e}")
-    sync_result = False
+    sys.exit(1)
 
 # 初始化游戏API
 try:
     game_api = GameAPI()
 except Exception as e:
-    exit(f"GameAPI对象创建失败: {e}")
+    logging.error(f"GameAPI对象创建失败: {e}")
+    sys.exit(1)
 
 # 加载皮肤数据
 normal_tools = tools()
 skin_dict = normal_tools.list_skin_directories()
 
 # 初始化modTools
-modtools = modTools()
+try:
+    modtools = modTools()
+except Exception as e:
+    logging.error(f"modTools对象创建失败: {e}")
+    sys.exit(1)
 
 # 创建Web服务器
 web_server = SkinWebServer(modtools)
