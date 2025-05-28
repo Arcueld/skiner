@@ -62,19 +62,23 @@ class SkinWebServer:
             if not selected_skin or not self.current_champion:
                 return jsonify({"success": False, "message": "无效的选择"})
             
-            # 处理特殊英雄名称
-            # self.current_champion = self.current_champion.replace("AurelionSol","Aurelion Sol").replace("BelVeth","Bel'Veth").replace("ChoGath","Cho'Gath").replace("KhaZix","Kha'Zix").replace("Rakan","Rakan") \
-            # .replace("DrMundo","Dr. Mundo").replace("JarvanIV","Jarvan IV").replace("KhaZix","Kha'Zix").replace("KogMaw","Kog'Maw") \
-            # .replace("LeeSin","Lee Sin").replace("MasterYi","Master Yi").replace("Miss Fortune","MissFortune") \
-            # .replace("Nunu","Nunu & Willump").replace("RekSai","Rek'Sai").replace("RenataGlasc","Renata Glasc").replace("TahmKench","Tahm Kench") \
-            # .replace("VelKoz","Vel'Koz").replace("XinZhao","Xin Zhao")
-            
-            # 导入并应用皮肤
             skin_path = f"skins\\{self.current_champion}\\{selected_skin}.zip"
-            
             success = self.modtools.importMod(skin_path)
+            
+            # 导入失败，尝试处理特殊英雄名称(适配lol-skins 老改名干什么玩意)
             if not success:
-                return jsonify({"success": False, "message": "导入皮肤失败"})
+                # 处理特殊英雄名称
+                processed_champion = self.current_champion.replace("AurelionSol","Aurelion Sol").replace("BelVeth","Bel'Veth").replace("ChoGath","Cho'Gath").replace("KhaZix","Kha'Zix").replace("Rakan","Rakan") \
+                .replace("DrMundo","Dr. Mundo").replace("JarvanIV","Jarvan IV").replace("KhaZix","Kha'Zix").replace("KogMaw","Kog'Maw") \
+                .replace("LeeSin","Lee Sin").replace("MasterYi","Master Yi").replace("Miss Fortune","MissFortune") \
+                .replace("Nunu","Nunu & Willump").replace("RekSai","Rek'Sai").replace("RenataGlasc","Renata Glasc").replace("TahmKench","Tahm Kench") \
+                .replace("VelKoz","Vel'Koz").replace("XinZhao","Xin Zhao")
+                
+                # 再次尝试导入
+                skin_path = f"skins\\{processed_champion}\\{selected_skin}.zip"
+                success = self.modtools.importMod(skin_path)
+                if not success:
+                    return jsonify({"success": False, "message": "导入皮肤失败"})
             
             success = self.modtools.saveProfile(selected_skin)
             if not success:
