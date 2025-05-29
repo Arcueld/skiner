@@ -37,7 +37,7 @@
         }
 
         .container {
-            max-width: 1200px;
+            max-width: 1600px;
             margin: 0 auto;
             padding: 20px;
             display: grid;
@@ -272,6 +272,11 @@
         }
 
         .tab-content.active {
+            display: block;
+        }
+
+        /* 为皮肤选择标签页单独设置grid布局 */
+        #skins-tab.active {
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 30px;
@@ -280,117 +285,186 @@
         .teammates-container {
             background: var(--card-background);
             border-radius: var(--border-radius);
-            padding: 20px;
+            padding: 15px;
             box-shadow: var(--shadow);
+            width: 100%;
+        }
+
+        .teammates-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 15px;
+            padding: 0;
+            overflow-y: auto;
+            max-height: calc(100vh - 150px);
+            width: 100%;
         }
 
         .teammate-card {
-            background: var(--background-color);
+            background: var(--card-background);
             border-radius: var(--border-radius);
-            padding: 15px;
-            margin-bottom: 15px;
+            padding: 12px;
+            box-shadow: var(--shadow);
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+            min-height: 440px;
         }
 
         .teammate-header {
             display: flex;
+            justify-content: space-between;
             align-items: center;
-            gap: 10px;
-            margin-bottom: 10px;
+            margin-bottom: 8px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid #eee;
         }
 
-        .teammate-name {
-            font-weight: 500;
-            color: var(--text-primary);
-        }
-
-        .teammate-position {
-            background: var(--primary-color);
-            color: white;
-            padding: 2px 8px;
-            border-radius: 12px;
-            font-size: 0.9em;
+        .teammate-stats {
+            margin: 0 0 8px 0;
+            display: flex;
+            justify-content: space-between;
+            padding-bottom: 8px;
+            border-bottom: 1px solid #eee;
         }
 
         .match-history {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            grid-template-rows: repeat(2, 1fr);
+            gap: 8px;
+            overflow: hidden;
+            width: 100%;
+            flex: 1;
             margin-top: 10px;
         }
 
         .match-item {
-            display: grid;
-            grid-template-columns: auto 1fr auto auto;
-            gap: 10px;
-            padding: 12px;
+            display: flex;
+            flex-direction: column;
+            padding: 8px;
             border-radius: var(--border-radius);
             background: var(--card-background);
-            margin-bottom: 8px;
-            font-size: 0.9em;
-            align-items: center;
+            font-size: 0.85em;
+            transition: var(--transition);
+            border-left: 3px solid transparent;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            cursor: pointer;
+            height: 135px;
+            width: 100%;
+            box-sizing: border-box;
+            justify-content: space-between;
+        }
+
+        .match-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
         }
 
         .match-item.win {
-            border-left: 3px solid var(--success-color);
+            border-left-color: var(--success-color);
+            background-color: rgba(52, 168, 83, 0.05);
         }
 
         .match-item.loss {
-            border-left: 3px solid var(--error-color);
+            border-left-color: var(--error-color);
+            background-color: rgba(234, 67, 53, 0.05);
         }
 
         .match-champion {
-            font-weight: 500;
-            min-width: 100px;
+            display: flex;
+            align-items: center;
+            margin-bottom: 4px;
+            height: 24px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .match-champion img {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            vertical-align: middle;
+            margin-right: 4px;
+            object-fit: cover;
         }
 
         .match-kda {
+            margin: 4px 0;
+            height: 36px;
             display: flex;
             flex-direction: column;
-            gap: 4px;
+            justify-content: center;
         }
 
-        .match-kda-stats {
-            color: var(--text-secondary);
+        .match-gamemode {
+            margin: 4px 0;
+            font-size: 0.85em;
+            color: #1a73e8;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            height: 18px;
         }
 
-        .match-kda-value {
-            color: var(--primary-color);
-            font-weight: 500;
-        }
-
-        .match-time {
-            color: var(--text-secondary);
-            font-size: 0.9em;
-            text-align: right;
-            min-width: 80px;
-        }
-
-        .match-duration {
-            color: var(--text-secondary);
-            font-size: 0.9em;
-            text-align: right;
-            min-width: 60px;
-        }
-
-        .teammate-stats {
-            margin-top: 10px;
-            padding: 10px;
-            background: var(--card-background);
-            border-radius: var(--border-radius);
-            font-size: 0.9em;
-        }
-
-        .teammate-stats-row {
+        .match-time-container {
             display: flex;
             justify-content: space-between;
-            margin-bottom: 5px;
-        }
-
-        .teammate-stats-label {
+            font-size: 0.85em;
             color: var(--text-secondary);
+            margin-top: auto;
+            height: 18px;
         }
 
-        .teammate-stats-value {
-            font-weight: 500;
+        /* 响应式布局 */
+        @media (max-width: 1600px) {
+            .match-history { grid-template-columns: repeat(4, 1fr); }
         }
 
+        @media (max-width: 1200px) {
+            .match-history { grid-template-columns: repeat(3, 1fr); }
+        }
+
+        @media (max-width: 900px) {
+            .match-history { grid-template-columns: repeat(2, 1fr); }
+        }
+
+        @media (max-width: 600px) {
+            .match-history { grid-template-columns: repeat(1, 1fr); }
+        }
+
+        /* 对局详情样式 */
+        #match-detail-content table {
+            width: 100%;
+            font-size: 15px;
+            min-width: 1100px;
+        }
+
+        #match-detail-content th, #match-detail-content td {
+            padding: 8px 10px;
+        }
+
+        /* 高亮单元格的样式 */
+        .highest-cell {
+            background-color: #ffe082 !important;
+            color: #b71c1c !important;
+            font-weight: bold !important;
+        }
+        
+        #match-detail-content td.hover-row {
+            background: #fffde7 !important;
+            color: #222 !important;
+            font-weight: bold;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+
+        #match-detail-content td.highest-cell.hover-row {
+            background: #ffe082 !important; /* 悬浮在最高值上时保留最高值背景 */
+            color: #b71c1c !important;     /* 悬浮在最高值上时保留最高值颜色 */
+        }
+
+        /* 刷新按钮样式 */
         .refresh-button {
             background: var(--primary-color);
             color: white;
@@ -399,155 +473,102 @@
             border-radius: var(--border-radius);
             cursor: pointer;
             font-size: 0.9em;
-            transition: var(--transition);
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
 
         .refresh-button:hover {
             background: var(--secondary-color);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+        }
+
+        .refresh-button:disabled {
+            background-color: var(--text-secondary);
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
         }
 
         .loading-spinner {
             display: inline-block;
-            width: 20px;
-            height: 20px;
-            border: 2px solid var(--background-color);
-            border-top: 2px solid var(--primary-color);
+            width: 16px;
+            height: 16px;
+            border: 2px solid rgba(255,255,255,0.3);
             border-radius: 50%;
-            animation: spin 1s linear infinite;
-            margin-left: 10px;
+            border-top-color: #fff;
+            animation: spin 1s ease-in-out infinite;
         }
 
         @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+            to { transform: rotate(360deg); }
         }
 
-        @media (max-width: 1024px) {
-            .container {
-                grid-template-columns: 1fr;
-            }
-
-            .right-panel {
-                position: static;
-                height: auto;
-            }
-
-            .preview-container {
-                height: 400px;
-            }
-
-            .skins-container {
-                max-height: none;
-            }
-
-            .tab-content.active {
-                grid-template-columns: 1fr;
-            }
+        /* 为召唤师名字添加样式，表明可点击 */
+        .match-detail-modal td[data-summoner-id] {
+            cursor: pointer;
         }
 
-        @media (max-width: 768px) {
-            .container {
-                padding: 10px;
-            }
-
-            .header h1 {
-                font-size: 2em;
-            }
-
-            .preview-container {
-                height: 300px;
-            }
-
-            .preview-image {
-                max-height: 250px;
+        .match-detail-modal td[data-summoner-id]:hover {
+            text-decoration: underline;
+            color: var(--primary-color);
         }
 
-        .teammates-list {
-            display: grid;
-            grid-template-columns: repeat(5, 1fr);
-            gap: 20px;
-            padding: 20px;
+        .match-history::-webkit-scrollbar {
+            height: 6px;
         }
 
-        .teammate-card {
-            background: var(--card-background);
-            border-radius: var(--border-radius);
-            padding: 15px;
-            box-shadow: var(--shadow);
-            height: fit-content;
+        .match-history::-webkit-scrollbar-track {
+            background: var(--background-color);
+            border-radius: 3px;
         }
 
-        .match-history {
-            max-height: 500px;
-            overflow-y: auto;
-            margin-top: 10px;
+        .match-history::-webkit-scrollbar-thumb {
+            background: var(--secondary-color);
+            border-radius: 3px;
         }
 
-        .match-item {
-            display: flex;
-            flex-direction: column;
-            padding: 10px;
-            border-radius: var(--border-radius);
-            background: var(--card-background);
-            margin-bottom: 8px;
+        /* 召唤师名称和位置样式 */
+        .teammate-name {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 100%;
+            font-weight: bold;
+            font-size: 1.1em;
+        }
+
+        .teammate-position {
+            white-space: nowrap;
             font-size: 0.9em;
-        }
-
-        .match-champion {
-            display: flex;
-            align-items: center;
-            margin-bottom: 5px;
-        }
-
-        .match-kda {
-            margin: 5px 0;
-        }
-
-        .match-time, .match-duration {
-            font-size: 0.85em;
             color: var(--text-secondary);
         }
 
-        @media (max-width: 1200px) {
-            .teammates-list {
-                grid-template-columns: repeat(3, 1fr);
-            }
+        /* 确保战绩卡片内容垂直居中 */
+        .teammate-stats-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 5px;
         }
 
-        @media (max-width: 768px) {
-            .teammates-list {
-                grid-template-columns: repeat(2, 1fr);
-            }
-        }
-
-        @media (max-width: 480px) {
-            .teammates-list {
-                grid-height: 1fr;
-            }
-        }
-
-        #match-detail-content table {
-            width: 100%;
-            font-size: 15px;
-            min-width: 1100px;
-        }
-        #match-detail-content th, #match-detail-content td {
-            padding: 8px 10px;
-        }
-        /* 原 highest-cell CSS 已移除，改为JS控制 */
-        /* 原 hover-row CSS 已移除，改为JS控制 */
-        /* 原 highest-cell.hover-row CSS 已移除，改为JS控制 */
-        #match-detail-content td.hover-row {
-            background: #fffde7 !important;
-            color: #222 !important;
+        .teammate-stats-value {
             font-weight: bold;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
         }
-        #match-detail-content td.highest-cell.hover-row {
-            background: #ffe082 !important; /* 悬浮在最高值上时保留最高值背景 */
-            color: #b71c1c !important;     /* 悬浮在最高值上时保留最高值颜色 */
+
+        /* 空战绩项样式 */
+        .empty-match-item {
+            opacity: 0.3;
+            background-color: #f5f5f5;
+            pointer-events: none;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: var(--text-secondary);
+            font-size: 0.9em;
         }
-    }
     </style>
 </head>
 <body>
@@ -593,7 +614,7 @@
     </div>
     
             <div id="teammates-tab" class="tab-content">
-                <div class="teammates-container">
+                <div style="width: 100%;">
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
                         <h2>队友战绩</h2>
                         <div style="display:flex;align-items:center;gap:10px;">
@@ -611,12 +632,12 @@
                             </button>
                         </div>
                     </div>
-                    <div id="teammates-list"></div>
-        </div>
-    </div>
-    
+                    <div id="teammates-list" class="teammates-list"></div>
+                </div>
+            </div>
+            
             <div id="summoner-lookup-tab" class="tab-content">
-                <div class="teammates-container">
+                <div class="teammates-container" style="width: 100%;">
                     <h2>召唤师战绩查询</h2>
                     <div style="margin-bottom: 20px; display: flex; align-items: center;">
                         <select id="lookup-mode-filter" style="padding:6px 12px;border-radius:6px;border:1px solid #ccc;">
@@ -629,7 +650,7 @@
                         </select>
                         <span id="lookup-loading-spinner" class="loading-spinner" style="display: none; margin-left: 10px;"></span>
                     </div>
-                    <div id="summoner-lookup-results"></div>
+                    <div id="summoner-lookup-results" class="teammates-list"></div>
                 </div>
             </div>
 
@@ -637,7 +658,7 @@
         </div>
         
         <!-- 对局详情弹窗 -->
-        <div id="match-detail-modal" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.5); z-index:2000; align-items:center; justify-content:center;">
+        <div id="match-detail-modal" class="match-detail-modal" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.5); z-index:2000; align-items:center; justify-content:center;">
             <div style="background:#fff; border-radius:12px; max-width:1600px; width:98vw; max-height:90vh; overflow:auto; padding:32px 24px 24px 24px; position:relative;">
                 <button id="close-match-detail" style="position:absolute; top:12px; right:16px; background:#eee; border:none; border-radius:50%; width:32px; height:32px; font-size:1.2em; cursor:pointer;">×</button>
                 <h2 style="margin-bottom:18px;">对局详情</h2>
@@ -928,6 +949,10 @@
                     container.innerHTML = '<div class="teammate-card">当前没有队友数据</div>';
                     return;
                 }
+                
+                // 正常模式的队列ID: 匹配(400)、单双排(420)、灵活组排(440)
+                const normalQueueIds = [400, 420, 440]; 
+                
                 // 过滤逻辑
                 const filterValue = document.getElementById('mode-filter')?.value || 'ALL';
                 let filtered = JSON.parse(JSON.stringify(teammates));
@@ -940,53 +965,91 @@
                                 return match.gameMode === filterValue;
                             }
                         });
-                        // 只取最新10场
-                        teammate.matchHistory = matches.slice(0, 10);
+                        // 只取最新6场
+                        teammate.matchHistory = matches.slice(0, 6);
                     });
                 } else {
                     filtered.forEach(teammate => {
-                        teammate.matchHistory = teammate.matchHistory.slice(0, 10);
+                        teammate.matchHistory = teammate.matchHistory.slice(0, 6);
                     });
                 }
+                
                 // 只展示有战绩的队友
                 filtered = filtered.filter(teammate => teammate.matchHistory && teammate.matchHistory.length > 0);
                 container.innerHTML = filtered.map(teammate => {
-                    const totalKDA = teammate.matchHistory.reduce((sum, match) => sum + match.kda, 0);
-                    const avgKDA = (totalKDA / teammate.matchHistory.length).toFixed(2);
-                    const wins = teammate.matchHistory.filter(match => match.win).length;
-                    const winRate = ((wins / teammate.matchHistory.length) * 100).toFixed(1);
+                    // 只计算正常模式的KDA
+                    const normalModeMatches = teammate.matchHistory.filter(match => 
+                        normalQueueIds.includes(match.queueId)
+                    );
+                    
+                    // 如果有正常模式的对局，使用这些对局计算KDA
+                    // 否则使用所有对局计算KDA
+                    const matchesToCalculate = normalModeMatches.length > 0 ? normalModeMatches : teammate.matchHistory;
+                    
+                    const totalKDA = matchesToCalculate.reduce((sum, match) => sum + match.kda, 0);
+                    const avgKDA = matchesToCalculate.length > 0 ? 
+                        (totalKDA / matchesToCalculate.length).toFixed(2) : 
+                        "N/A";
+                        
+                    const wins = matchesToCalculate.filter(match => match.win).length;
+                    const winRate = matchesToCalculate.length > 0 ? 
+                        ((wins / matchesToCalculate.length) * 100).toFixed(1) : 
+                        "N/A";
+                        
+                    // 显示使用的是正常模式还是所有模式
+                    const usedNormalMode = normalModeMatches.length > 0;
+                    const statsNote = usedNormalMode ? 
+                        `<div style="font-size: 0.8em; color: var(--text-secondary); margin-top: 5px;">*仅计算正常模式</div>` : 
+                        (filterValue !== 'ALL' ? `` : `<div style="font-size: 0.8em; color: var(--text-secondary); margin-top: 5px;">*包含所有模式</div>`);
+                        
+                    // 确保始终显示6个战绩格子，如果不足则添加空格子
+                    const matchesHtml = teammate.matchHistory.map(match => `
+                        <div class="match-item ${match.win ? 'win' : 'loss'}" data-gameid="${match.gameId || ''}">
+                            <div class="match-champion">
+                                <img src="//game.gtimg.cn/images/lol/act/img/champion/${match.championName}.png" onerror="this.style.display='none'">
+                                ${match.championName}
+                            </div>
+                            <div class="match-kda">
+                                <div class="match-kda-stats">${match.kills}/${match.deaths}/${match.assists}</div>
+                                <div class="match-kda-value">KDA: <span style="color: ${match.kda >= 3 ? 'var(--success-color)' : 'inherit'}">${match.kda}</span></div>
+                            </div>
+                            <div class="match-gamemode">${modeMap[match.gameMode] || match.gameMode || '其他模式'} ${normalQueueIds.includes(match.queueId) ? '★' : ''}</div>
+                            <div class="match-time-container">
+                                <div class="match-duration">${match.gameDuration}</div>
+                                <div class="match-time">${match.gameCreation}</div>
+                            </div>
+                        </div>
+                    `).join('');
+                    
+                    // 添加空格子以确保始终有6个格子
+                    const emptyMatchesCount = 6 - teammate.matchHistory.length;
+                    const emptyMatchesHtml = emptyMatchesCount > 0 ? 
+                        Array(emptyMatchesCount).fill(0).map(() => `
+                            <div class="match-item empty-match-item">
+                                <div>无战绩</div>
+                            </div>
+                        `).join('') : '';
+                        
                     return `
                         <div class="teammate-card">
                             <div class="teammate-header">
-                                <span class="teammate-name">${teammate.summonerName}</span>
-                                ${teammate.position && teammate.position !== '未知位置' ? `<span class="teammate-position">${teammate.position}</span>` : ''}
+                                <span class="teammate-name">${teammate.summonerName || '未知召唤师'}</span>
+                                ${teammate.position && teammate.position !== '未知' ? `<span class="teammate-position">${teammate.position}</span>` : ''}
                             </div>
                             <div class="teammate-stats">
                                 <div class="teammate-stats-row">
                                     <span class="teammate-stats-label">平均KDA:</span>
-                                    <span class="teammate-stats-value">${avgKDA}</span>
+                                    <span class="teammate-stats-value" style="color: var(--primary-color);">${avgKDA}</span>
                                 </div>
                                 <div class="teammate-stats-row">
                                     <span class="teammate-stats-label">胜率:</span>
-                                    <span class="teammate-stats-value">${winRate}%</span>
+                                    <span class="teammate-stats-value" style="color: ${winRate >= 50 ? 'var(--success-color)' : 'var(--error-color)'};">${winRate}${winRate !== "N/A" ? "%" : ""}</span>
                                 </div>
+                                ${statsNote}
                             </div>
                             <div class="match-history">
-                                ${teammate.matchHistory.map(match => `
-                                    <div class="match-item ${match.win ? 'win' : 'loss'}" data-gameid="${match.gameId || ''}" style="cursor:pointer;">
-                                        <div class="match-champion">
-                                            <img src="//game.gtimg.cn/images/lol/act/img/champion/${match.championName}.png" style="width:24px;height:24px;border-radius:50%;vertical-align:middle;margin-right:4px;" onerror="this.style.display='none'">
-                                            ${match.championName}
-                                        </div>
-                                        <div class="match-kda">
-                                            <div class="match-kda-stats">${match.kills}/${match.deaths}/${match.assists}</div>
-                                            <div class="match-kda-value">KDA: ${match.kda}</div>
-                                        </div>
-                                        <div class="match-gamemode" style="margin:5px 0;font-size:0.9em;color:#1a73e8;">${modeMap[match.gameMode] || match.gameMode || '其他模式'}</div>
-                                        <div class="match-duration">${match.gameDuration}</div>
-                                        <div class="match-time">${match.gameCreation}</div>
-                                    </div>
-                                `).join('')}
+                                ${matchesHtml}
+                                ${emptyMatchesHtml}
                             </div>
                         </div>
                     `;
@@ -1060,7 +1123,6 @@
                         </tr></thead><tbody>`;
                         data.participants.forEach((p, idx) => {
                             if (idx === 5) {
-
                                 html += `<tr><td colspan="12" style="height:2px; background:#333; padding:1px 0;"></td></tr>`;
                             }
                             const heroImg = `<img src='//game.gtimg.cn/images/lol/act/img/champion/${p.championName}.png' style='width:32px;height:32px;vertical-align:middle;border-radius:50%;' onerror="this.style.display='none'">`;
@@ -1071,27 +1133,23 @@
                                 const max = team === 1 ? max1[key] : max2[key];
                                 return Number(val) == max && max > 0;
                             }
-                            // 根据是否最高数值决定内联样式 (包含font-weight)
-                            const champDamageStyle = isHighest(p.champDamage, 'champDamage') ? 'background:#ffe082;color:#b71c1c;font-weight:bold;' : '';
-                            const damageToTurretsStyle = isHighest(p.damageToTurrets, 'damageToTurrets') ? 'background:#ffe082;color:#b71c1c;font-weight:bold;' : '';
-                            const damageSelfMitigatedStyle = isHighest(p.damageSelfMitigated, 'damageSelfMitigated') ? 'background:#ffe082;color:#b71c1c;font-weight:bold;' : '';
-                            const goldEarnedStyle = isHighest(p.goldEarned, 'goldEarned') ? 'background:#ffe082;color:#b71c1c;font-weight:bold;' : '';
-                            const minionsKilledStyle = isHighest(p.minionsKilled, 'minionsKilled') ? 'background:#ffe082;color:#b71c1c;font-weight:bold;' : '';
-                            const damageConversionStyle = isHighest(p.damageConversion, 'damageConversion') ? 'background:#ffe082;color:#b71c1c;font-weight:bold;' : '';
+                            
+                            // 添加可点击样式，只有当有summonerId时才添加
+                            const summonerNameStyle = p.summonerId ? 'cursor:pointer; color:var(--primary-color);' : '';
 
                             html += `<tr class="data-row" id="row-${idx}" data-summoner-name="${p.summonerName}" data-summoner-id="${p.summonerId || ''}">
-                                <td style="text-align:center;">${p.summonerName}</td>
+                                <td style="text-align:center;${summonerNameStyle}">${p.summonerName || '未知召唤师'}</td>
                                 <td style="width:40px; text-align:center;">${heroImg}</td>
                                 <td style="text-align:left; padding-left:5px;">${p.championName}</td>
                                 <td style="text-align:center;">${p.kills}/${p.deaths}/${p.assists}</td>
                                 <td style="text-align:center;">${p.win ? '<span style="color:green;">胜</span>' : '<span style="color:red;">负</span>'}</td>
                                 <td style="text-align:center;">${items}</td>
-                                <td class="${isHighest(p.champDamage, 'champDamage') ? 'highest-cell' : ''}" style="text-align:center;${champDamageStyle}">${p.champDamage}</td>
-                                <td class="${isHighest(p.damageToTurrets, 'damageToTurrets') ? 'highest-cell' : ''}" style="text-align:center;${damageToTurretsStyle}">${p.damageToTurrets}</td>
-                                <td class="${isHighest(p.damageSelfMitigated, 'damageSelfMitigated') ? 'highest-cell' : ''}" style="text-align:center;${damageSelfMitigatedStyle}">${p.damageSelfMitigated}</td>
-                                <td class="${isHighest(p.goldEarned, 'goldEarned') ? 'highest-cell' : ''}" style="text-align:center;${goldEarnedStyle}">${p.goldEarned}</td>
-                                <td class="${isHighest(p.minionsKilled, 'minionsKilled') ? 'highest-cell' : ''}" style="text-align:center;${minionsKilledStyle}">${p.minionsKilled}</td>
-                                <td class="${isHighest(p.damageConversion, 'damageConversion') ? 'highest-cell' : ''}" style="text-align:center;${damageConversionStyle}">${p.damageConversion}</td>
+                                <td class="${isHighest(p.champDamage, 'champDamage') ? 'highest-cell' : ''}" style="text-align:center;">${p.champDamage}</td>
+                                <td class="${isHighest(p.damageToTurrets, 'damageToTurrets') ? 'highest-cell' : ''}" style="text-align:center;">${p.damageToTurrets}</td>
+                                <td class="${isHighest(p.damageSelfMitigated, 'damageSelfMitigated') ? 'highest-cell' : ''}" style="text-align:center;">${p.damageSelfMitigated}</td>
+                                <td class="${isHighest(p.goldEarned, 'goldEarned') ? 'highest-cell' : ''}" style="text-align:center;">${p.goldEarned}</td>
+                                <td class="${isHighest(p.minionsKilled, 'minionsKilled') ? 'highest-cell' : ''}" style="text-align:center;">${p.minionsKilled}</td>
+                                <td class="${isHighest(p.damageConversion, 'damageConversion') ? 'highest-cell' : ''}" style="text-align:center;">${p.damageConversion}</td>
                             </tr>`;
                         });
                         html += `</tbody></table></div>`;
@@ -1102,30 +1160,59 @@
                         setTimeout(() => {
                             console.log('Attempting to add click listeners.');
                             document.querySelectorAll('#match-detail-content tr.data-row').forEach(row => {
+                                // 存储原始样式的对象
+                                const originalStyles = {};
+                                
                                 row.onmouseenter = function() {
+                                    // 存储并应用行悬停样式
                                     this.querySelectorAll('td').forEach(td => {
-                                        td.classList.add('hovered-td');
-
-                                        if (!td.classList.contains('highest-cell')) {
+                                        const isHighestCell = td.classList.contains('highest-cell');
+                                        const tdId = td.cellIndex;
+                                        
+                                        // 存储原始样式
+                                        if (!originalStyles[tdId]) {
+                                            originalStyles[tdId] = {
+                                                backgroundColor: td.style.backgroundColor,
+                                                color: td.style.color,
+                                                fontWeight: td.style.fontWeight,
+                                                boxShadow: td.style.boxShadow
+                                            };
+                                        }
+                                        
+                                        // 应用悬停样式，但保留高亮单元格的特殊样式
+                                        if (isHighestCell) {
+                                            // 高亮单元格使用特殊样式
+                                            td.style.backgroundColor = '#ffe082';
+                                            td.style.color = '#b71c1c';
+                                            td.style.fontWeight = 'bold';
+                                        } else {
+                                            // 普通单元格使用普通悬停样式
                                             td.style.backgroundColor = '#fffde7';
                                             td.style.color = '#222';
                                             td.style.fontWeight = 'bold';
                                         }
                                         td.style.boxShadow = '0 2px 8px rgba(0,0,0,0.08)';
-
                                     });
                                 };
 
                                 row.onmouseleave = function() {
+                                    // 恢复原始样式
                                     this.querySelectorAll('td').forEach(td => {
-                                        td.classList.remove('hovered-td');
-
-                                        if (!td.classList.contains('highest-cell')) {
-                                             td.style.backgroundColor = '';
-                                             td.style.color = '';
-                                             td.style.fontWeight = '';
+                                        const tdId = td.cellIndex;
+                                        const isHighestCell = td.classList.contains('highest-cell');
+                                        
+                                        if (isHighestCell) {
+                                            // 恢复高亮单元格的原始样式
+                                            td.style.backgroundColor = '#ffe082';
+                                            td.style.color = '#b71c1c';
+                                            td.style.fontWeight = 'bold';
+                                        } else {
+                                            // 恢复普通单元格的原始样式
+                                            td.style.backgroundColor = originalStyles[tdId]?.backgroundColor || '';
+                                            td.style.color = originalStyles[tdId]?.color || '';
+                                            td.style.fontWeight = originalStyles[tdId]?.fontWeight || '';
                                         }
-                                         td.style.boxShadow = '';
+                                        td.style.boxShadow = originalStyles[tdId]?.boxShadow || '';
                                     });
                                 };
 
@@ -1144,10 +1231,6 @@
                             });
                             console.log('Click listeners should be added.');
                         }, 0); // 确保DOM更新后再添加事件监听
-
-                        // 添加显示召唤师战绩的函数 (不再直接从对局详情调用)
-                        // async function showSummonerMatchHistoryById(summonerId, summonerName) { ... }
-
                     })
                     .catch(err => {
                         content.innerHTML = `<div style='color:red;'>加载失败: ${err}</div>`;
@@ -1289,6 +1372,10 @@
                  container.innerHTML = '<div class="teammate-card">当前没有队友数据</div>';
                  return;
              }
+             
+             // 正常模式的队列ID: 匹配(400)、单双排(420)、灵活组排(440)
+             const normalQueueIds = [400, 420, 440]; 
+             
              // 过滤逻辑
              const filterValue = document.getElementById('mode-filter')?.value || 'ALL';
              let filtered = JSON.parse(JSON.stringify(teammates));
@@ -1301,53 +1388,91 @@
                              return match.gameMode === filterValue;
                          }
                      });
-                     // 只取最新10场
-                     teammate.matchHistory = matches.slice(0, 10);
+                     // 只取最新6场
+                     teammate.matchHistory = matches.slice(0, 6);
                  });
              } else {
                  filtered.forEach(teammate => {
-                     teammate.matchHistory = teammate.matchHistory.slice(0, 10);
+                     teammate.matchHistory = teammate.matchHistory.slice(0, 6);
                  });
              }
+             
              // 只展示有战绩的队友
              filtered = filtered.filter(teammate => teammate.matchHistory && teammate.matchHistory.length > 0);
              container.innerHTML = filtered.map(teammate => {
-                 const totalKDA = teammate.matchHistory.reduce((sum, match) => sum + match.kda, 0);
-                 const avgKDA = (totalKDA / teammate.matchHistory.length).toFixed(2);
-                 const wins = teammate.matchHistory.filter(match => match.win).length;
-                 const winRate = ((wins / teammate.matchHistory.length) * 100).toFixed(1);
+                 // 只计算正常模式的KDA
+                 const normalModeMatches = teammate.matchHistory.filter(match => 
+                     normalQueueIds.includes(match.queueId)
+                 );
+                 
+                 // 如果有正常模式的对局，使用这些对局计算KDA
+                 // 否则使用所有对局计算KDA
+                 const matchesToCalculate = normalModeMatches.length > 0 ? normalModeMatches : teammate.matchHistory;
+                 
+                 const totalKDA = matchesToCalculate.reduce((sum, match) => sum + match.kda, 0);
+                 const avgKDA = matchesToCalculate.length > 0 ? 
+                     (totalKDA / matchesToCalculate.length).toFixed(2) : 
+                     "N/A";
+                     
+                 const wins = matchesToCalculate.filter(match => match.win).length;
+                 const winRate = matchesToCalculate.length > 0 ? 
+                     ((wins / matchesToCalculate.length) * 100).toFixed(1) : 
+                     "N/A";
+                     
+                 // 显示使用的是正常模式还是所有模式
+                 const usedNormalMode = normalModeMatches.length > 0;
+                 const statsNote = usedNormalMode ? 
+                     `<div style="font-size: 0.8em; color: var(--text-secondary); margin-top: 5px;">*仅计算正常模式</div>` : 
+                     (filterValue !== 'ALL' ? `` : `<div style="font-size: 0.8em; color: var(--text-secondary); margin-top: 5px;">*包含所有模式</div>`);
+                     
+                 // 确保始终显示6个战绩格子，如果不足则添加空格子
+                 const matchesHtml = teammate.matchHistory.map(match => `
+                     <div class="match-item ${match.win ? 'win' : 'loss'}" data-gameid="${match.gameId || ''}">
+                         <div class="match-champion">
+                             <img src="//game.gtimg.cn/images/lol/act/img/champion/${match.championName}.png" onerror="this.style.display='none'">
+                             ${match.championName}
+                         </div>
+                         <div class="match-kda">
+                             <div class="match-kda-stats">${match.kills}/${match.deaths}/${match.assists}</div>
+                             <div class="match-kda-value">KDA: <span style="color: ${match.kda >= 3 ? 'var(--success-color)' : 'inherit'}">${match.kda}</span></div>
+                         </div>
+                         <div class="match-gamemode">${modeMap[match.gameMode] || match.gameMode || '其他模式'} ${normalQueueIds.includes(match.queueId) ? '★' : ''}</div>
+                         <div class="match-time-container">
+                             <div class="match-duration">${match.gameDuration}</div>
+                             <div class="match-time">${match.gameCreation}</div>
+                         </div>
+                     </div>
+                 `).join('');
+                 
+                 // 添加空格子以确保始终有6个格子
+                 const emptyMatchesCount = 6 - teammate.matchHistory.length;
+                 const emptyMatchesHtml = emptyMatchesCount > 0 ? 
+                     Array(emptyMatchesCount).fill(0).map(() => `
+                         <div class="match-item empty-match-item">
+                             <div>无战绩</div>
+                         </div>
+                     `).join('') : '';
+                     
                  return `
                      <div class="teammate-card">
                          <div class="teammate-header">
-                             <span class="teammate-name">${teammate.summonerName}</span>
-                             ${teammate.position && teammate.position !== '未知位置' ? `<span class="teammate-position">${teammate.position}</span>` : ''}
+                             <span class="teammate-name">${teammate.summonerName || '未知召唤师'}</span>
+                             ${teammate.position && teammate.position !== '未知' ? `<span class="teammate-position">${teammate.position}</span>` : ''}
                          </div>
                          <div class="teammate-stats">
                              <div class="teammate-stats-row">
                                  <span class="teammate-stats-label">平均KDA:</span>
-                                 <span class="teammate-stats-value">${avgKDA}</span>
+                                 <span class="teammate-stats-value" style="color: var(--primary-color);">${avgKDA}</span>
                              </div>
                              <div class="teammate-stats-row">
                                  <span class="teammate-stats-label">胜率:</span>
-                                 <span class="teammate-stats-value">${winRate}%</span>
+                                 <span class="teammate-stats-value" style="color: ${winRate >= 50 ? 'var(--success-color)' : 'var(--error-color)'};">${winRate}${winRate !== "N/A" ? "%" : ""}</span>
                              </div>
+                             ${statsNote}
                          </div>
                          <div class="match-history">
-                             ${teammate.matchHistory.map(match => `
-                                 <div class="match-item ${match.win ? 'win' : 'loss'}" data-gameid="${match.gameId || ''}" style="cursor:pointer;">
-                                     <div class="match-champion">
-                                         <img src="//game.gtimg.cn/images/lol/act/img/champion/${match.championName}.png" style="width:24px;height:24px;border-radius:50%;vertical-align:middle;margin-right:4px;" onerror="this.style.display='none'">
-                                         ${match.championName}
-                                     </div>
-                                     <div class="match-kda">
-                                         <div class="match-kda-stats">${match.kills}/${match.deaths}/${match.assists}</div>
-                                         <div class="match-kda-value">KDA: ${match.kda}</div>
-                                     </div>
-                                     <div class="match-gamemode" style="margin:5px 0;font-size:0.9em;color:#1a73e8;">${modeMap[match.gameMode] || match.gameMode || '其他模式'}</div>
-                                     <div class="match-duration">${match.gameDuration}</div>
-                                     <div class="match-time">${match.gameCreation}</div>
-                                 </div>
-                             `).join('')}
+                             ${matchesHtml}
+                             ${emptyMatchesHtml}
                          </div>
                      </div>
                  `;

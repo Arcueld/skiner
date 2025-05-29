@@ -120,7 +120,7 @@ class SkinWebServer:
                 # 处理特殊英雄名称
                 processed_champion = self.current_champion.replace("AurelionSol","Aurelion Sol").replace("BelVeth","Bel'Veth").replace("ChoGath","Cho'Gath").replace("KhaZix","Kha'Zix").replace("Rakan","Rakan") \
                 .replace("DrMundo","Dr. Mundo").replace("JarvanIV","Jarvan IV").replace("Khazix","Kha'Zix").replace("KogMaw","Kog'Maw") \
-                .replace("LeeSin","Lee Sin").replace("MasterYi","Master Yi").replace("Miss Fortune","MissFortune") \
+                .replace("LeeSin","Lee Sin").replace("MasterYi","Master Yi").replace("MissFortune","Miss Fortune") \
                 .replace("Nunu","Nunu & Willump").replace("RekSai","Rek'Sai").replace("RenataGlasc","Renata Glasc").replace("TahmKench","Tahm Kench") \
                 .replace("Velkoz","Vel'Koz").replace("XinZhao","Xin Zhao").replace("KSante","K'Sante")
                 
@@ -204,7 +204,7 @@ class SkinWebServer:
             if detail:
                 return jsonify(detail)
             return jsonify({"error": "无法获取对局详情"}), 500
-
+    
         # 添加通过 Summoner ID 获取指定召唤师战绩的API
         @self.app.route('/api/summoner_match_history_by_id/<int:summoner_id>')
         def get_summoner_match_history_by_id(summoner_id):

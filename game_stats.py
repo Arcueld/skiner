@@ -3,6 +3,7 @@ import logging
 import json
 import traceback
 from datetime import datetime, timedelta
+import urllib.parse
 
 class GameStats:
     def __init__(self, game_api):
@@ -35,8 +36,6 @@ class GameStats:
                 verify=False
             )
             
-            logging.info(f"获取游戏会话响应状态码: {response.status_code}")
-            logging.info(f"获取游戏会话响应内容: {response.text}")
             
             if response.status_code != 200:
                 logging.error(f"获取当前游戏玩家信息失败: {response.status_code}")
@@ -49,10 +48,24 @@ class GameStats:
             for member in data.get("myTeam", []):
                 player = {
                     "summonerId": member.get("summonerId"),
+                    "puuid": member.get("puuid"),
                     "summonerName": member.get("summonerName"),
                     "championId": member.get("championId"),
                     "position": member.get("assignedPosition", "未知")
                 }
+                if player.get("puuid"):
+                    summoner_info = self.get_summoner_by_puuid(player["puuid"])
+                    if summoner_info and summoner_info.get("displayName"):
+                        player["summonerName"] = summoner_info["displayName"]
+                    elif summoner_info and summoner_info.get("gameName") and summoner_info.get("tagLine"):
+                         player["summonerName"] = f"{summoner_info['gameName']}#{summoner_info['tagLine']}"
+                    elif player.get("summonerId") and player["summonerId"] != 0:
+                         summoner_info_by_id = self.get_summoner_by_id(player["summonerId"])
+                         if summoner_info_by_id and summoner_info_by_id.get("displayName"):
+                             player["summonerName"] = summoner_info_by_id["displayName"]
+                         elif summoner_info_by_id and summoner_info_by_id.get("gameName") and summoner_info_by_id.get("tagLine"):
+                             player["summonerName"] = f"{summoner_info_by_id['gameName']}#{summoner_info_by_id['tagLine']}"
+
                 players.append(player)
                 logging.debug(f"添加玩家信息: {player}")
             
@@ -297,4 +310,52 @@ class GameStats:
             }
         except Exception as e:
             logging.error(f"获取对局详情时出错: {e}")
+            return None 
+
+    def get_summoner_by_puuid(self, puuid):
+        """根据玩家puuid获取召唤师信息"""
+        try:
+            # 检查PUUID格式是否有效，防止Invalid URI Format错误
+            if not puuid or '-' not in puuid or len(puuid) < 30:
+                logging.warning(f"无效的PUUID格式: {puuid}")
+                return None
+            
+            # 对PUUID进行URL编码，防止特殊字符导致的错误
+            encoded_puuid = urllib.parse.quote(puuid)
+            
+            response = requests.get(
+                f"{self.url}/lol-summoner/v1/summoners/by-puuid/{encoded_puuid}",
+                verify=False
+            )
+            if response.status_code == 200:
+                return response.json()
+            else:
+                logging.error(f"根据puuid获取召唤师信息失败: {response.status_code} - {response.text}")
+                return None
+        except Exception as e:
+            logging.error(f"根据puuid获取召唤师信息时出错: {e}")
+            import traceback
+            logging.error(f"错误堆栈: {traceback.format_exc()}")
+            return None
+
+    def get_summoner_by_id(self, summoner_id):
+        """根据玩家summonerId获取召唤师信息"""
+        # 注意：这个方法可能在某些模式下（如训练模式）summonerId为0时不可用
+        if summoner_id == 0:
+             return None
+        try:
+            response = requests.get(
+                f"{self.url}/lol-summoner/v1/summoners/{summoner_id}",
+                verify=False
+            )
+            if response.status_code == 200:
+                return response.json()
+            else:
+                # 记录错误，但可能在预期之内（如summonerId为0）
+                logging.debug(f"根据summonerId获取召唤师信息失败: {response.status_code} - {response.text}")
+                return None
+        except Exception as e:
+            logging.error(f"根据summonerId获取召唤师信息时出错: {e}")
+            import traceback
+            logging.error(f"错误堆栈: {traceback.format_exc()}")
             return None 
