@@ -16,6 +16,7 @@ from tools import *
 from web_server import SkinWebServer
 from champion_monitor import ChampionMonitor
 from game_api import GameAPI
+from game_stats import GameStats
 
 def cleanup_processes():
     """清理所有相关进程"""
@@ -219,6 +220,9 @@ except Exception as e:
     logging.error(f"GameAPI对象创建失败: {e}")
     sys.exit(1)
 
+# 初始化游戏统计
+game_stats = GameStats(game_api)
+
 # 加载皮肤数据
 normal_tools = tools()
 skin_dict = normal_tools.list_skin_directories()
@@ -231,7 +235,7 @@ except Exception as e:
     sys.exit(1)
 
 # 创建Web服务器
-web_server = SkinWebServer(modtools)
+web_server = SkinWebServer(modtools, game_stats)
 web_server.start(18081)
 
 # 创建并启动英雄监控
@@ -245,3 +249,8 @@ try:
         time.sleep(1)
 except KeyboardInterrupt:
     logging.info("程序已退出")
+finally:
+    if 'champion_monitor' in locals():
+        champion_monitor.stop()
+    if 'web_server' in locals():
+        web_server.stop()

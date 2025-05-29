@@ -11,9 +11,10 @@ from flask import Flask, render_template, request, jsonify, send_file
 targetPort = None
 
 class SkinWebServer:
-    def __init__(self, modtools=None):
+    def __init__(self, modtools=None, game_stats=None):
         self.app = Flask(__name__, template_folder='templates', static_folder='static')
         self.modtools = modtools
+        self.game_stats = game_stats
         self.current_champion = None
         self.available_skins = []
         self.skins_data = self.load_skins_json()
@@ -26,8 +27,6 @@ class SkinWebServer:
         
         if not os.path.exists("templates"):
             os.makedirs("templates")
-        
-        self.create_template()
         
         # 注册退出处理
         atexit.register(self.cleanup)
@@ -174,487 +173,52 @@ class SkinWebServer:
                 "skins": self.available_skins,
                 "skins_data": skins_with_data
             })
-    
-    def create_template(self):
-        with open("templates/index.html", "w", encoding="utf-8") as f:
-            f.write("""
-<!DOCTYPE html>
-<html>
-<head>
-    <title>League of Legends Skin Selector</title>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
-    <style>
-        :root {
-            --primary-color: #1a73e8;
-            --secondary-color: #4285f4;
-            --background-color: #f8f9fa;
-            --card-background: #ffffff;
-            --text-primary: #202124;
-            --text-secondary: #5f6368;
-            --success-color: #34a853;
-            --error-color: #ea4335;
-            --border-radius: 8px;
-            --shadow: 0 2px 4px rgba(0,0,0,0.1);
-            --transition: all 0.3s ease;
-            --preview-height: 600px;
-        }
-
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: 'Roboto', sans-serif;
-            background-color: var(--background-color);
-            color: var(--text-primary);
-            line-height: 1.6;
-            padding: 20px;
-            min-height: 100vh;
-        }
-
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 20px;
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 30px;
-        }
-
-        .left-panel {
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-        }
-
-        .right-panel {
-            position: sticky;
-            top: 20px;
-            height: calc(100vh - 40px);
-        }
-
-        .header {
-            text-align: center;
-            padding: 20px;
-            background: var(--card-background);
-            border-radius: var(--border-radius);
-            box-shadow: var(--shadow);
-            grid-column: 1 / -1;
-        }
-
-        .header h1 {
-            color: var(--primary-color);
-            font-size: 2.5em;
-            margin-bottom: 10px;
-        }
-
-        .champion-info {
-            background: var(--card-background);
-            border-radius: var(--border-radius);
-            padding: 20px;
-            box-shadow: var(--shadow);
-            text-align: center;
-        }
-
-        .champion-info h2 {
-            color: var(--text-primary);
-            font-size: 1.8em;
-            margin-bottom: 10px;
-        }
-
-        .preview-container {
-            background: var(--card-background);
-            border-radius: var(--border-radius);
-            padding: 20px;
-            box-shadow: var(--shadow);
-            text-align: center;
-            height: var(--preview-height);
-            display: flex;
-            flex-direction: column;
-            position: relative;
-        }
-
-        .preview-container h3 {
-            color: var(--text-primary);
-            margin-bottom: 20px;
-        }
-
-        .preview-content {
-            flex: 1;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            overflow: hidden;
-        }
-
-        .preview-image {
-            max-width: 100%;
-            max-height: calc(var(--preview-height) - 100px);
-            object-fit: contain;
-            border-radius: var(--border-radius);
-            box-shadow: var(--shadow);
-        }
-
-        .no-preview {
-            padding: 40px;
-            background: var(--background-color);
-            border-radius: var(--border-radius);
-            color: var(--text-secondary);
-            font-size: 1.2em;
-            width: 100%;
-            height: 100%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .skins-container {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-            gap: 20px;
-            overflow-y: auto;
-            max-height: calc(100vh - 400px);
-            padding-right: 10px;
-        }
-
-        .skins-container::-webkit-scrollbar {
-            width: 8px;
-        }
-
-        .skins-container::-webkit-scrollbar-track {
-            background: var(--background-color);
-            border-radius: 4px;
-        }
-
-        .skins-container::-webkit-scrollbar-thumb {
-            background: var(--secondary-color);
-            border-radius: 4px;
-        }
-
-        .skin-item {
-            background: var(--card-background);
-            border-radius: var(--border-radius);
-            padding: 15px;
-            text-align: center;
-            cursor: pointer;
-            transition: var(--transition);
-            box-shadow: var(--shadow);
-            border: 2px solid transparent;
-        }
-
-        .skin-item:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-            border-color: var(--primary-color);
-        }
-
-        .skin-item.selected {
-            background-color: #e8f0fe;
-            border-color: var(--primary-color);
-        }
-
-        .action-buttons {
-            margin: 20px 0;
-            text-align: center;
-        }
-
-        .apply-button {
-            background-color: var(--success-color);
-            color: white;
-            border: none;
-            padding: 12px 30px;
-            border-radius: var(--border-radius);
-            cursor: pointer;
-            font-size: 1.1em;
-            font-weight: 500;
-            transition: var(--transition);
-            box-shadow: var(--shadow);
-        }
-
-        .apply-button:hover {
-            background-color: #2d9249;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-        }
-
-        .apply-button:disabled {
-            background-color: var(--text-secondary);
-            cursor: not-allowed;
-            transform: none;
-            box-shadow: none;
-        }
-
-        .status {
-            margin: 20px auto;
-            padding: 15px;
-            border-radius: var(--border-radius);
-            text-align: center;
-            max-width: 600px;
-            display: none;
-        }
-
-        .status.success {
-            background-color: #e6f4ea;
-            color: var(--success-color);
-            border: 1px solid var(--success-color);
-        }
-
-        .status.error {
-            background-color: #fce8e6;
-            color: var(--error-color);
-            border: 1px solid var(--error-color);
-        }
-
-        #loading {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            background-color: var(--primary-color);
-            color: white;
-            padding: 10px 20px;
-            border-radius: var(--border-radius);
-            display: none;
-            box-shadow: var(--shadow);
-            z-index: 1000;
-        }
-
-        @media (max-width: 1024px) {
-            .container {
-                grid-template-columns: 1fr;
-            }
-
-            .right-panel {
-                position: static;
-                height: auto;
-            }
-
-            .preview-container {
-                height: 400px;
-            }
-
-            .skins-container {
-                max-height: none;
-            }
-        }
-
-        @media (max-width: 768px) {
-            .container {
-                padding: 10px;
-            }
-
-            .header h1 {
-                font-size: 2em;
-            }
-
-            .preview-container {
-                height: 300px;
-            }
-
-            .preview-image {
-                max-height: 250px;
-            }
-        }
-    </style>
-</head>
-<body>
-    <div id="loading">Loading...</div>
-    <div class="container">
-        <div class="header">
-            <h1>League of Legends Skin Selector</h1>
-        </div>
         
-        <div class="left-panel">
-            <div class="champion-info">
-                <h2>Current Champion: <span id="champion-name">{{ champion }}</span></h2>
-            </div>
+        # 添加获取队友战绩的API
+        @self.app.route('/api/teammates_stats')
+        def get_teammates_stats():
+            if not self.game_stats:
+                return jsonify({"error": "Game stats not initialized"}), 500
+            mode = request.args.get('mode')
+            stats = self.game_stats.get_teammates_stats(mode=mode)
+            if stats:
+                return jsonify(stats)
+            return jsonify({"error": "无法获取队友战绩"}), 500
+
+        # 添加获取当前游戏玩家的API
+        @self.app.route('/api/current_players')
+        def get_current_players():
+            if not self.game_stats:
+                return jsonify({"error": "Game stats not initialized"}), 500
             
-            <div class="skins-container">
-                {% for skin in skins %}
-                <div class="skin-item" data-skin="{{ skin }}">
-                    {{ skin }}
-                </div>
-                {% endfor %}
-            </div>
-        </div>
-        
-        <div class="right-panel">
-            <div class="preview-container">
-                <h3>Skin Preview</h3>
-                <div id="preview-content" class="preview-content no-preview">
-                    Select a skin to preview
-                </div>
-            </div>
-            
-            <div class="action-buttons">
-                <button id="apply-button" class="apply-button" disabled>Apply Selected Skin</button>
-            </div>
-        </div>
-        
-        <div id="status" class="status"></div>
-    </div>
-    
-    <script>
-        // Store skin data from server
-        let skinData = [];
-        let lastChampion = '{{ champion }}';
-        let currentSelectedSkin = null;
-        
-        // Initial data load
-        fetchCurrentData();
-        
-        // Periodically check for updates
-        setInterval(fetchCurrentData, 3000);
-        
-        function fetchCurrentData() {
-            document.getElementById('loading').style.display = 'block';
-            
-            fetch('/api/current_data')
-                .then(response => response.json())
-                .then(data => {
-                    document.getElementById('loading').style.display = 'none';
-                    
-                    // Store skin data for later use
-                    skinData = data.skins_data || [];
-                    
-                    // If champion changed, update the page
-                    if (data.champion !== lastChampion) {
-                        lastChampion = data.champion;
-                        document.getElementById('champion-name').textContent = data.champion;
-                        
-                        // Update skin list
-                        const skinsContainer = document.getElementById('skins-container');
-                        skinsContainer.innerHTML = '';
-                        
-                        data.skins.forEach(skin => {
-                            const skinItem = document.createElement('div');
-                            skinItem.className = 'skin-item';
-                            skinItem.textContent = skin;
-                            skinItem.dataset.skin = skin;
-                            skinItem.addEventListener('click', function() {
-                                previewSkin(skin);
-                            });
-                            skinsContainer.appendChild(skinItem);
-                        });
-                        
-                        // Reset preview and selection state
-                        resetPreview();
-                    }
-                })
-                .catch(error => {
-                    document.getElementById('loading').style.display = 'none';
-                    console.error('Update check failed:', error);
-                });
-        }
-        
-        function resetPreview() {
-            const previewContent = document.getElementById('preview-content');
-            previewContent.className = 'preview-content no-preview';
-            previewContent.innerHTML = 'Select a skin to preview';
-            currentSelectedSkin = null;
-            document.getElementById('apply-button').disabled = true;
-            
-            // Remove selected state from all skin items
-            document.querySelectorAll('.skin-item').forEach(item => {
-                item.classList.remove('selected');
-            });
-        }
-        
-        function previewSkin(skinName) {
-            // Update selection state
-            document.querySelectorAll('.skin-item').forEach(item => {
-                if (item.dataset.skin === skinName) {
-                    item.classList.add('selected');
-                } else {
-                    item.classList.remove('selected');
-                }
-            });
-            
-            const previewContent = document.getElementById('preview-content');
-            previewContent.className = 'preview-content';
-            previewContent.innerHTML = '<p>Loading preview...</p>';
-            
-            // Get current champion
-            const champion = document.getElementById('champion-name').textContent;
-            
-            // Load preview image
-            const img = new Image();
-            img.onload = function() {
-                previewContent.innerHTML = '';
-                img.className = 'preview-image';
-                previewContent.appendChild(img);
-            };
-            img.onerror = function() {
-                previewContent.className = 'preview-content no-preview';
-                previewContent.innerHTML = 'Preview image not available';
-            };
-            
-            // Use the skin name to request the preview
-            img.src = `/api/skin_preview/${encodeURIComponent(skinName)}?champion=${encodeURIComponent(champion)}`;
-            
-            // Update current selected skin and enable apply button
-            currentSelectedSkin = skinName;
-            document.getElementById('apply-button').disabled = false;
-        }
-        
-        // Apply button click event
-        document.getElementById('apply-button').addEventListener('click', function() {
-            if (currentSelectedSkin) {
-                selectSkin(currentSelectedSkin);
-            }
-        });
-        
-        function selectSkin(skin) {
-            fetch('/api/select_skin', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    skin: skin
-                }),
-            })
-            .then(response => response.json())
-            .then(data => {
-                const statusDiv = document.getElementById('status');
-                statusDiv.style.display = 'block';
-                
-                if (data.success) {
-                    statusDiv.className = 'status success';
-                } else {
-                    statusDiv.className = 'status error';
-                }
-                
-                statusDiv.textContent = data.message;
-                
-                // Hide status message after 3 seconds
-                setTimeout(() => {
-                    statusDiv.style.display = 'none';
-                }, 3000);
-            })
-            .catch((error) => {
-                console.error('Error:', error);
-                const statusDiv = document.getElementById('status');
-                statusDiv.style.display = 'block';
-                statusDiv.className = 'status error';
-                statusDiv.textContent = 'Error: ' + error;
-            });
-        }
-        
-        // Initialize click handlers for skin items
-        document.querySelectorAll('.skin-item').forEach(item => {
-            item.addEventListener('click', function() {
-                previewSkin(this.dataset.skin);
-            });
-        });
-    </script>
-</body>
-</html>
-            """)
-    
+            players = self.game_stats.get_current_game_players()
+            if players:
+                return jsonify(players)
+            return jsonify({"error": "无法获取当前游戏玩家信息"}), 500
+
+        @self.app.route('/api/match_detail/<game_id>')
+        def get_match_detail(game_id):
+            if not self.game_stats:
+                return jsonify({"error": "Game stats not initialized"}), 500
+            detail = self.game_stats.get_match_detail(game_id)
+            if detail:
+                return jsonify(detail)
+            return jsonify({"error": "无法获取对局详情"}), 500
+
+        # 添加通过 Summoner ID 获取指定召唤师战绩的API
+        @self.app.route('/api/summoner_match_history_by_id/<int:summoner_id>')
+        def get_summoner_match_history_by_id(summoner_id):
+            if not self.game_stats:
+                return jsonify({"error": "Game stats not initialized"}), 500
+            # 默认获取全部模式的战绩，从请求参数中获取模式
+            mode = request.args.get('mode', 'ALL')
+            match_history = self.game_stats.get_player_match_history(summoner_id, mode=mode) # 传递模式参数
+            if match_history is not None:
+                # 返回战绩列表
+                return jsonify({"matchHistory": match_history})
+            # 注意：通过ID获取可能无法直接获取名字，前端需要自己处理显示
+            return jsonify({"error": f"无法获取召唤师 (ID: {summoner_id}) 的战绩"}), 500
+
     def update_champion_data(self, champion, skins):
         """更新当前英雄和可用皮肤数据"""
         self.current_champion = champion

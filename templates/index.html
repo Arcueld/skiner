@@ -1,0 +1,1358 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>League of Legends Skin Selector</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #1a73e8;
+            --secondary-color: #4285f4;
+            --background-color: #f8f9fa;
+            --card-background: #ffffff;
+            --text-primary: #202124;
+            --text-secondary: #5f6368;
+            --success-color: #34a853;
+            --error-color: #ea4335;
+            --border-radius: 8px;
+            --shadow: 0 2px 4px rgba(0,0,0,0.1);
+            --transition: all 0.3s ease;
+            --preview-height: 600px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: var(--background-color);
+            color: var(--text-primary);
+            line-height: 1.6;
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+        }
+
+        .left-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .right-panel {
+            position: sticky;
+            top: 20px;
+            height: calc(100vh - 40px);
+        }
+
+        .header {
+            text-align: center;
+            padding: 20px;
+            background: var(--card-background);
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            grid-column: 1 / -1;
+        }
+
+        .header h1 {
+            color: var(--primary-color);
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .champion-info {
+            background: var(--card-background);
+            border-radius: var(--border-radius);
+            padding: 20px;
+            box-shadow: var(--shadow);
+            text-align: center;
+        }
+
+        .champion-info h2 {
+            color: var(--text-primary);
+            font-size: 1.8em;
+            margin-bottom: 10px;
+        }
+
+        .preview-container {
+            background: var(--card-background);
+            border-radius: var(--border-radius);
+            padding: 20px;
+            box-shadow: var(--shadow);
+            text-align: center;
+            height: var(--preview-height);
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        .preview-container h3 {
+            color: var(--text-primary);
+            margin-bottom: 20px;
+        }
+
+        .preview-content {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        .preview-image {
+            max-width: 100%;
+            max-height: calc(var(--preview-height) - 100px);
+            object-fit: contain;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+        }
+
+        .no-preview {
+            padding: 40px;
+            background: var(--background-color);
+            border-radius: var(--border-radius);
+            color: var(--text-secondary);
+            font-size: 1.2em;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .skins-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 20px;
+            overflow-y: auto;
+            max-height: calc(100vh - 400px);
+            padding-right: 10px;
+        }
+
+        .skins-container::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .skins-container::-webkit-scrollbar-track {
+            background: var(--background-color);
+            border-radius: 4px;
+        }
+
+        .skins-container::-webkit-scrollbar-thumb {
+            background: var(--secondary-color);
+            border-radius: 4px;
+        }
+
+        .skin-item {
+            background: var(--card-background);
+            border-radius: var(--border-radius);
+            padding: 15px;
+            text-align: center;
+            cursor: pointer;
+            transition: var(--transition);
+            box-shadow: var(--shadow);
+            border: 2px solid transparent;
+        }
+
+        .skin-item:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+            border-color: var(--primary-color);
+        }
+
+        .skin-item.selected {
+            background-color: #e8f0fe;
+            border-color: var(--primary-color);
+        }
+
+        .action-buttons {
+            margin: 20px 0;
+            text-align: center;
+        }
+
+        .apply-button {
+            background-color: var(--success-color);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            font-size: 1.1em;
+            font-weight: 500;
+            transition: var(--transition);
+            box-shadow: var(--shadow);
+        }
+
+        .apply-button:hover {
+            background-color: #2d9249;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+
+        .apply-button:disabled {
+            background-color: var(--text-secondary);
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .status {
+            margin: 20px auto;
+            padding: 15px;
+            border-radius: var(--border-radius);
+            text-align: center;
+            max-width: 600px;
+            display: none;
+        }
+
+        .status.success {
+            background-color: #e6f4ea;
+            color: var(--success-color);
+            border: 1px solid var(--success-color);
+        }
+
+        .status.error {
+            background-color: #fce8e6;
+            color: var(--error-color);
+            border: 1px solid var(--error-color);
+        }
+
+        #loading {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background-color: var(--primary-color);
+            color: white;
+            padding: 10px 20px;
+            border-radius: var(--border-radius);
+            display: none;
+            box-shadow: var(--shadow);
+            z-index: 1000;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            grid-column: 1 / -1;
+        }
+
+        .tab {
+            padding: 10px 20px;
+            background: var(--card-background);
+            border: none;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            font-size: 1em;
+            color: var(--text-secondary);
+            transition: var(--transition);
+            box-shadow: var(--shadow);
+        }
+
+        .tab.active {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .tab-content {
+            display: none;
+            grid-column: 1 / -1;
+        }
+
+        .tab-content.active {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+        }
+
+        .teammates-container {
+            background: var(--card-background);
+            border-radius: var(--border-radius);
+            padding: 20px;
+            box-shadow: var(--shadow);
+        }
+
+        .teammate-card {
+            background: var(--background-color);
+            border-radius: var(--border-radius);
+            padding: 15px;
+            margin-bottom: 15px;
+        }
+
+        .teammate-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .teammate-name {
+            font-weight: 500;
+            color: var(--text-primary);
+        }
+
+        .teammate-position {
+            background: var(--primary-color);
+            color: white;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 0.9em;
+        }
+
+        .match-history {
+            margin-top: 10px;
+        }
+
+        .match-item {
+            display: grid;
+            grid-template-columns: auto 1fr auto auto;
+            gap: 10px;
+            padding: 12px;
+            border-radius: var(--border-radius);
+            background: var(--card-background);
+            margin-bottom: 8px;
+            font-size: 0.9em;
+            align-items: center;
+        }
+
+        .match-item.win {
+            border-left: 3px solid var(--success-color);
+        }
+
+        .match-item.loss {
+            border-left: 3px solid var(--error-color);
+        }
+
+        .match-champion {
+            font-weight: 500;
+            min-width: 100px;
+        }
+
+        .match-kda {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .match-kda-stats {
+            color: var(--text-secondary);
+        }
+
+        .match-kda-value {
+            color: var(--primary-color);
+            font-weight: 500;
+        }
+
+        .match-time {
+            color: var(--text-secondary);
+            font-size: 0.9em;
+            text-align: right;
+            min-width: 80px;
+        }
+
+        .match-duration {
+            color: var(--text-secondary);
+            font-size: 0.9em;
+            text-align: right;
+            min-width: 60px;
+        }
+
+        .teammate-stats {
+            margin-top: 10px;
+            padding: 10px;
+            background: var(--card-background);
+            border-radius: var(--border-radius);
+            font-size: 0.9em;
+        }
+
+        .teammate-stats-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 5px;
+        }
+
+        .teammate-stats-label {
+            color: var(--text-secondary);
+        }
+
+        .teammate-stats-value {
+            font-weight: 500;
+        }
+
+        .refresh-button {
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            font-size: 0.9em;
+            transition: var(--transition);
+        }
+
+        .refresh-button:hover {
+            background: var(--secondary-color);
+        }
+
+        .loading-spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 2px solid var(--background-color);
+            border-top: 2px solid var(--primary-color);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-left: 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @media (max-width: 1024px) {
+            .container {
+                grid-template-columns: 1fr;
+            }
+
+            .right-panel {
+                position: static;
+                height: auto;
+            }
+
+            .preview-container {
+                height: 400px;
+            }
+
+            .skins-container {
+                max-height: none;
+            }
+
+            .tab-content.active {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+
+            .header h1 {
+                font-size: 2em;
+            }
+
+            .preview-container {
+                height: 300px;
+            }
+
+            .preview-image {
+                max-height: 250px;
+        }
+
+        .teammates-list {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 20px;
+            padding: 20px;
+        }
+
+        .teammate-card {
+            background: var(--card-background);
+            border-radius: var(--border-radius);
+            padding: 15px;
+            box-shadow: var(--shadow);
+            height: fit-content;
+        }
+
+        .match-history {
+            max-height: 500px;
+            overflow-y: auto;
+            margin-top: 10px;
+        }
+
+        .match-item {
+            display: flex;
+            flex-direction: column;
+            padding: 10px;
+            border-radius: var(--border-radius);
+            background: var(--card-background);
+            margin-bottom: 8px;
+            font-size: 0.9em;
+        }
+
+        .match-champion {
+            display: flex;
+            align-items: center;
+            margin-bottom: 5px;
+        }
+
+        .match-kda {
+            margin: 5px 0;
+        }
+
+        .match-time, .match-duration {
+            font-size: 0.85em;
+            color: var(--text-secondary);
+        }
+
+        @media (max-width: 1200px) {
+            .teammates-list {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .teammates-list {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 480px) {
+            .teammates-list {
+                grid-height: 1fr;
+            }
+        }
+
+        #match-detail-content table {
+            width: 100%;
+            font-size: 15px;
+            min-width: 1100px;
+        }
+        #match-detail-content th, #match-detail-content td {
+            padding: 8px 10px;
+        }
+        /* 原 highest-cell CSS 已移除，改为JS控制 */
+        /* 原 hover-row CSS 已移除，改为JS控制 */
+        /* 原 highest-cell.hover-row CSS 已移除，改为JS控制 */
+        #match-detail-content td.hover-row {
+            background: #fffde7 !important;
+            color: #222 !important;
+            font-weight: bold;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+        #match-detail-content td.highest-cell.hover-row {
+            background: #ffe082 !important; /* 悬浮在最高值上时保留最高值背景 */
+            color: #b71c1c !important;     /* 悬浮在最高值上时保留最高值颜色 */
+        }
+    }
+    </style>
+</head>
+<body>
+    <div id="loading">Loading...</div>
+        <div class="container">
+            <div class="header">
+    <h1>League of Legends Skin Selector</h1>
+            </div>
+            
+            <div class="tabs">
+                <button class="tab active" data-tab="skins">皮肤选择</button>
+                <button class="tab" data-tab="teammates">队友战绩</button>
+                <button class="tab" data-tab="summoner-lookup">召唤师查询</button>
+            </div>
+
+            <div id="skins-tab" class="tab-content active">
+                <div class="left-panel">
+    <div class="champion-info">
+        <h2>Current Champion: <span id="champion-name">{{ champion }}</span></h2>
+    </div>
+    
+                    <div class="skins-container">
+                        {% for skin in skins %}
+                        <div class="skin-item" data-skin="{{ skin }}">
+                            {{ skin }}
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                
+                <div class="right-panel">
+    <div class="preview-container">
+        <h3>Skin Preview</h3>
+                        <div id="preview-content" class="preview-content no-preview">
+            Select a skin to preview
+        </div>
+    </div>
+    
+    <div class="action-buttons">
+        <button id="apply-button" class="apply-button" disabled>Apply Selected Skin</button>
+                    </div>
+                </div>
+    </div>
+    
+            <div id="teammates-tab" class="tab-content">
+                <div class="teammates-container">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                        <h2>队友战绩</h2>
+                        <div style="display:flex;align-items:center;gap:10px;">
+                            <select id="mode-filter" style="padding:6px 12px;border-radius:6px;border:1px solid #ccc;">
+                                <option value="ALL">全部</option>
+                                <option value="SOLO_DUO">召唤师峡谷-单双排</option>
+                                <option value="FLEX">召唤师峡谷-灵活排</option>
+                                <option value="ARAM">大乱斗</option>
+                                <option value="URF">无限火力</option>
+                                <option value="PRACTICETOOL">训练模式</option>
+                            </select>
+                            <button id="refresh-stats" class="refresh-button">
+                                刷新战绩
+                                <span class="loading-spinner" style="display: none;"></span>
+                            </button>
+                        </div>
+                    </div>
+                    <div id="teammates-list"></div>
+        </div>
+    </div>
+    
+            <div id="summoner-lookup-tab" class="tab-content">
+                <div class="teammates-container">
+                    <h2>召唤师战绩查询</h2>
+                    <div style="margin-bottom: 20px; display: flex; align-items: center;">
+                        <select id="lookup-mode-filter" style="padding:6px 12px;border-radius:6px;border:1px solid #ccc;">
+                            <option value="ALL">全部</option>
+                            <option value="SOLO_DUO">召唤师峡谷-单双排</option>
+                            <option value="FLEX">召唤师峡谷-灵活排</option>
+                            <option value="ARAM">大乱斗</option>
+                            <option value="URF">无限火力</option>
+                            <option value="PRACTICETOOL">训练模式</option>
+                        </select>
+                        <span id="lookup-loading-spinner" class="loading-spinner" style="display: none; margin-left: 10px;"></span>
+                    </div>
+                    <div id="summoner-lookup-results"></div>
+                </div>
+            </div>
+
+            <div id="status" class="status"></div>
+        </div>
+        
+        <!-- 对局详情弹窗 -->
+        <div id="match-detail-modal" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.5); z-index:2000; align-items:center; justify-content:center;">
+            <div style="background:#fff; border-radius:12px; max-width:1600px; width:98vw; max-height:90vh; overflow:auto; padding:32px 24px 24px 24px; position:relative;">
+                <button id="close-match-detail" style="position:absolute; top:12px; right:16px; background:#eee; border:none; border-radius:50%; width:32px; height:32px; font-size:1.2em; cursor:pointer;">×</button>
+                <h2 style="margin-bottom:18px;">对局详情</h2>
+                <div id="match-detail-content" style="overflow-x:auto;">
+                    加载中...
+                </div>
+            </div>
+        </div>
+    <script>
+        // Store skin data from server
+        let skinData = [];
+            let lastChampion = '';
+        let currentSelectedSkin = null;
+            let updateTimer = null;
+            let isUpdating = false;
+        // 添加全局变量用于存储当前查看的召唤师信息
+        let currentViewedSummonerId = null;
+        let currentViewedSummonerName = null;
+        
+        // Initial data load
+        fetchCurrentData();
+        
+            // 使用更短的轮询间隔
+            function startUpdateTimer() {
+                if (updateTimer) {
+                    clearInterval(updateTimer);
+                }
+                updateTimer = setInterval(fetchCurrentData, 1000); // 改为1秒
+            }
+            
+            // 启动定时更新
+            startUpdateTimer();
+            
+            // 页面可见性变化时控制更新
+            document.addEventListener('visibilitychange', function() {
+                if (document.hidden) {
+                    // 页面不可见时暂停更新
+                    if (updateTimer) {
+                        clearInterval(updateTimer);
+                        updateTimer = null;
+                    }
+                } else {
+                    // 页面可见时立即更新一次并恢复定时更新
+                    fetchCurrentData();
+                    startUpdateTimer();
+                }
+            });
+            
+            async function fetchCurrentData() {
+                // 防止重复请求
+                if (isUpdating) return;
+                isUpdating = true;
+                
+                try {
+                    const response = await fetch('/api/current_data');
+                    const data = await response.json();
+                    
+                    // 只有当英雄变化时才更新界面
+                    if (data.champion !== lastChampion) {
+                        lastChampion = data.champion;
+                        
+                        // 更新英雄名称
+                        const championNameElement = document.getElementById('champion-name');
+                        if (championNameElement.textContent !== data.champion) {
+                            championNameElement.textContent = data.champion;
+                        }
+                        
+                        // 更新皮肤列表
+                        updateSkinList(data.skins);
+                        
+                        // 重置预览和选择状态
+                        resetPreview();
+                    }
+                    
+                    // 存储皮肤数据
+                    skinData = data.skins_data || [];
+                    
+                } catch (error) {
+                    console.error('Update check failed:', error);
+                } finally {
+                    isUpdating = false;
+                }
+            }
+            
+            function updateSkinList(skins) {
+                const skinsContainer = document.querySelector('.skins-container');
+                const currentSkins = new Set(Array.from(skinsContainer.children).map(item => item.dataset.skin));
+                const newSkins = new Set(skins);
+                
+                // 移除不存在的皮肤
+                Array.from(skinsContainer.children).forEach(item => {
+                    if (!newSkins.has(item.dataset.skin)) {
+                        item.remove();
+                    }
+                });
+                
+                // 添加新皮肤
+                skins.forEach(skin => {
+                    if (!currentSkins.has(skin)) {
+                        const skinItem = document.createElement('div');
+                        skinItem.className = 'skin-item';
+                        skinItem.textContent = skin;
+                        skinItem.dataset.skin = skin;
+                        skinItem.addEventListener('click', () => previewSkin(skin));
+                        skinsContainer.appendChild(skinItem);
+                    }
+                });
+        }
+        
+        function resetPreview() {
+            const previewContent = document.getElementById('preview-content');
+                if (previewContent.className !== 'preview-content no-preview') {
+                    previewContent.className = 'preview-content no-preview';
+            previewContent.innerHTML = 'Select a skin to preview';
+                }
+                
+            currentSelectedSkin = null;
+                const applyButton = document.getElementById('apply-button');
+                if (!applyButton.disabled) {
+                    applyButton.disabled = true;
+                }
+            
+                // 移除所有皮肤项的选中状态
+                document.querySelectorAll('.skin-item.selected').forEach(item => {
+                item.classList.remove('selected');
+            });
+        }
+        
+        function previewSkin(skinName) {
+            // Update selection state
+            document.querySelectorAll('.skin-item').forEach(item => {
+                if (item.dataset.skin === skinName) {
+                    item.classList.add('selected');
+                } else {
+                    item.classList.remove('selected');
+                }
+            });
+            
+            const previewContent = document.getElementById('preview-content');
+                previewContent.className = 'preview-content';
+            previewContent.innerHTML = '<p>Loading preview...</p>';
+            
+            // Get current champion
+            const champion = document.getElementById('champion-name').textContent;
+            
+            // Load preview image
+            const img = new Image();
+            img.onload = function() {
+                previewContent.innerHTML = '';
+                img.className = 'preview-image';
+                previewContent.appendChild(img);
+            };
+            img.onerror = function() {
+                    previewContent.className = 'preview-content no-preview';
+                previewContent.innerHTML = 'Preview image not available';
+            };
+            
+            // Use the skin name to request the preview
+            img.src = `/api/skin_preview/${encodeURIComponent(skinName)}?champion=${encodeURIComponent(champion)}`;
+            
+            // Update current selected skin and enable apply button
+            currentSelectedSkin = skinName;
+            document.getElementById('apply-button').disabled = false;
+        }
+        
+        // Apply button click event
+        document.getElementById('apply-button').addEventListener('click', function() {
+            if (currentSelectedSkin) {
+                selectSkin(currentSelectedSkin);
+            }
+        });
+        
+        function selectSkin(skin) {
+            fetch('/api/select_skin', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    skin: skin
+                }),
+            })
+            .then(response => response.json())
+            .then(data => {
+                const statusDiv = document.getElementById('status');
+                statusDiv.style.display = 'block';
+                
+                if (data.success) {
+                    statusDiv.className = 'status success';
+                } else {
+                    statusDiv.className = 'status error';
+                }
+                
+                statusDiv.textContent = data.message;
+                
+                // Hide status message after 3 seconds
+                setTimeout(() => {
+                    statusDiv.style.display = 'none';
+                }, 3000);
+            })
+            .catch((error) => {
+                console.error('Error:', error);
+                const statusDiv = document.getElementById('status');
+                statusDiv.style.display = 'block';
+                statusDiv.className = 'status error';
+                statusDiv.textContent = 'Error: ' + error;
+            });
+        }
+        
+        // Initialize click handlers for skin items
+        document.querySelectorAll('.skin-item').forEach(item => {
+            item.addEventListener('click', function() {
+                previewSkin(this.dataset.skin);
+            });
+        });
+
+            // 添加标签页切换功能
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.addEventListener('click', () => {
+                    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+                    
+                    tab.classList.add('active');
+                    document.getElementById(`${tab.dataset.tab}-tab`).classList.add('active');
+                    
+                    // 如果切换到队友战绩标签页，自动刷新数据
+                    if (tab.dataset.tab === 'teammates') {
+                        // 重置当前查看的特定召唤师信息
+                        currentViewedSummonerId = null;
+                        currentViewedSummonerName = null;
+                        fetchTeammatesStats();
+                    } else if (tab.dataset.tab === 'summoner-lookup') {
+                        // 如果切换到召唤师查询标签页，清空之前的查询结果
+                        document.getElementById('summoner-lookup-results').innerHTML = '';
+                         // 重置当前查看的特定召唤师信息
+                        currentViewedSummonerId = null;
+                        currentViewedSummonerName = null;
+                    }
+                });
+            });
+
+            // 刷新战绩按钮点击事件
+            document.getElementById('refresh-stats').addEventListener('click', function() {
+                const spinner = this.querySelector('.loading-spinner');
+                spinner.style.display = 'inline-block';
+                fetchTeammatesStats().finally(() => {
+                    spinner.style.display = 'none';
+                });
+            });
+
+            // 过滤映射
+            const queueIdMap = {
+                SOLO_DUO: 420,
+                FLEX: 440,
+                ARAM: 450,
+                URF: 900,
+                PRACTICETOOL: 1700
+            };
+            let teammatesStatsCache = null;
+            let lastMode = 'ALL';
+            // 获取队友战绩数据
+            async function fetchTeammatesStats(mode) {
+                mode = mode || document.getElementById('mode-filter')?.value || 'ALL';
+                lastMode = mode;
+                try {
+                    const response = await fetch(`/api/teammates_stats?mode=${encodeURIComponent(mode)}`);
+                    const data = await response.json();
+                    if (response.ok) {
+                        teammatesStatsCache = data;
+                        displayTeammatesStats(data);
+                    } else {
+                        console.error('获取队友战绩失败:', data.error);
+                        document.getElementById('teammates-list').innerHTML = 
+                            `<div class="teammate-card">无法获取队友战绩: ${data.error}</div>`;
+                    }
+                } catch (error) {
+                    console.error('获取队友战绩时出错:', error);
+                    document.getElementById('teammates-list').innerHTML = 
+                        '<div class="teammate-card">获取队友战绩时出错</div>';
+                }
+            }
+
+            // 过滤并展示
+            function displayTeammatesStats(teammates, targetContainer = null) {
+                const container = targetContainer || document.getElementById('teammates-list');
+                container.className = 'teammates-list';
+                if (!teammates || teammates.length === 0) {
+                    container.innerHTML = '<div class="teammate-card">当前没有队友数据</div>';
+                    return;
+                }
+                // 过滤逻辑
+                const filterValue = document.getElementById('mode-filter')?.value || 'ALL';
+                let filtered = JSON.parse(JSON.stringify(teammates));
+                if (filterValue !== 'ALL') {
+                    filtered.forEach(teammate => {
+                        let matches = teammate.matchHistory.filter(match => {
+                            if (filterValue === 'SOLO_DUO' || filterValue === 'FLEX') {
+                                return match.queueId === queueIdMap[filterValue];
+                            } else {
+                                return match.gameMode === filterValue;
+                            }
+                        });
+                        // 只取最新10场
+                        teammate.matchHistory = matches.slice(0, 10);
+                    });
+                } else {
+                    filtered.forEach(teammate => {
+                        teammate.matchHistory = teammate.matchHistory.slice(0, 10);
+                    });
+                }
+                // 只展示有战绩的队友
+                filtered = filtered.filter(teammate => teammate.matchHistory && teammate.matchHistory.length > 0);
+                container.innerHTML = filtered.map(teammate => {
+                    const totalKDA = teammate.matchHistory.reduce((sum, match) => sum + match.kda, 0);
+                    const avgKDA = (totalKDA / teammate.matchHistory.length).toFixed(2);
+                    const wins = teammate.matchHistory.filter(match => match.win).length;
+                    const winRate = ((wins / teammate.matchHistory.length) * 100).toFixed(1);
+                    return `
+                        <div class="teammate-card">
+                            <div class="teammate-header">
+                                <span class="teammate-name">${teammate.summonerName}</span>
+                                ${teammate.position && teammate.position !== '未知位置' ? `<span class="teammate-position">${teammate.position}</span>` : ''}
+                            </div>
+                            <div class="teammate-stats">
+                                <div class="teammate-stats-row">
+                                    <span class="teammate-stats-label">平均KDA:</span>
+                                    <span class="teammate-stats-value">${avgKDA}</span>
+                                </div>
+                                <div class="teammate-stats-row">
+                                    <span class="teammate-stats-label">胜率:</span>
+                                    <span class="teammate-stats-value">${winRate}%</span>
+                                </div>
+                            </div>
+                            <div class="match-history">
+                                ${teammate.matchHistory.map(match => `
+                                    <div class="match-item ${match.win ? 'win' : 'loss'}" data-gameid="${match.gameId || ''}" style="cursor:pointer;">
+                                        <div class="match-champion">
+                                            <img src="//game.gtimg.cn/images/lol/act/img/champion/${match.championName}.png" style="width:24px;height:24px;border-radius:50%;vertical-align:middle;margin-right:4px;" onerror="this.style.display='none'">
+                                            ${match.championName}
+                                        </div>
+                                        <div class="match-kda">
+                                            <div class="match-kda-stats">${match.kills}/${match.deaths}/${match.assists}</div>
+                                            <div class="match-kda-value">KDA: ${match.kda}</div>
+                                        </div>
+                                        <div class="match-gamemode" style="margin:5px 0;font-size:0.9em;color:#1a73e8;">${modeMap[match.gameMode] || match.gameMode || '其他模式'}</div>
+                                        <div class="match-duration">${match.gameDuration}</div>
+                                        <div class="match-time">${match.gameCreation}</div>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            }
+
+            // 监听过滤器变化 (修改)
+            document.getElementById('mode-filter').addEventListener('change', function() {
+                const selectedMode = this.value;
+                if (currentViewedSummonerId) {
+                    // 如果正在查看特定召唤师，则过滤该召唤师的战绩
+                    showSummonerMatchHistoryById(currentViewedSummonerId, currentViewedSummonerName);
+                } else {
+                    // 否则，过滤当前游戏队友的战绩
+                    fetchTeammatesStats(selectedMode);
+                }
+            });
+
+            // 初始化时获取队友战绩 (保留，但可能需要根据需求调整)
+            // 如果页面加载时应该显示当前队友战绩，保留这行
+            // fetchTeammatesStats(); // 根据实际需求决定是否保留
+
+            // 对局详情弹窗逻辑
+            function showMatchDetail(gameId) {
+                const modal = document.getElementById('match-detail-modal');
+                const content = document.getElementById('match-detail-content');
+                modal.style.display = 'flex';
+                content.innerHTML = '加载中...';
+                console.log('Fetching match detail for gameId:', gameId);
+                fetch(`/api/match_detail/${gameId}`)
+                    .then(res => res.json())
+                    .then(data => {
+                        console.log('Match detail fetched:', data);
+                        if (data.error) {
+                            content.innerHTML = `<div style='color:red;'>${data.error}</div>`;
+                            return;
+                        }
+                        // 渲染所有参与者信息
+                        let html = `<div style='overflow-x:auto;'><table style='width:100%; border-collapse:collapse;'>`;
+                        // 先分队
+                        const team1 = data.participants.slice(0, 5);
+                        const team2 = data.participants.slice(5, 10);
+                        // 需要高亮的字段
+                        const fields = [
+                            'champDamage', 'damageToTurrets', 'damageSelfMitigated', 'goldEarned', 'minionsKilled', 'damageConversion'
+                        ];
+                        // 计算每队每项最大值
+                        function getMax(arr, key) {
+                            return Math.max(...arr.map(p => Number(p[key] || 0)));
+                        }
+                        const max1 = {};
+                        const max2 = {};
+                        fields.forEach(f => {
+                            max1[f] = getMax(team1, f);
+                            max2[f] = getMax(team2, f);
+                        });
+                        // 渲染
+                        html += `<thead><tr style='background:#f5f5f5;'>
+                            <th>召唤师名</th>
+                            <th style="width:40px;"></th>
+                            <th style="text-align:left;">英雄</th>
+                            <th>K/D/A</th>
+                            <th>胜负</th>
+                            <th>装备</th>
+                            <th>对英雄伤害</th>
+                            <th>对防御塔伤害</th>
+                            <th>自我缓和伤害</th>
+                            <th>经济</th>
+                            <th>补刀</th>
+                            <th>伤害转换率</th>
+                        </tr></thead><tbody>`;
+                        data.participants.forEach((p, idx) => {
+                            if (idx === 5) {
+
+                                html += `<tr><td colspan="12" style="height:2px; background:#333; padding:1px 0;"></td></tr>`;
+                            }
+                            const heroImg = `<img src='//game.gtimg.cn/images/lol/act/img/champion/${p.championName}.png' style='width:32px;height:32px;vertical-align:middle;border-radius:50%;' onerror="this.style.display='none'">`;
+                            let items = (p.items || []).map(itemId => itemId ? `<img src='https://game.gtimg.cn/images/lol/act/img/item/${itemId}.png' style='width:24px;height:24px;margin:0 2px;vertical-align:middle;' onerror="this.style.display='none'">` : '').join('');
+                            // 判断高亮
+                            const team = idx < 5 ? 1 : 2;
+                            function isHighest(val, key) {
+                                const max = team === 1 ? max1[key] : max2[key];
+                                return Number(val) == max && max > 0;
+                            }
+                            // 根据是否最高数值决定内联样式 (包含font-weight)
+                            const champDamageStyle = isHighest(p.champDamage, 'champDamage') ? 'background:#ffe082;color:#b71c1c;font-weight:bold;' : '';
+                            const damageToTurretsStyle = isHighest(p.damageToTurrets, 'damageToTurrets') ? 'background:#ffe082;color:#b71c1c;font-weight:bold;' : '';
+                            const damageSelfMitigatedStyle = isHighest(p.damageSelfMitigated, 'damageSelfMitigated') ? 'background:#ffe082;color:#b71c1c;font-weight:bold;' : '';
+                            const goldEarnedStyle = isHighest(p.goldEarned, 'goldEarned') ? 'background:#ffe082;color:#b71c1c;font-weight:bold;' : '';
+                            const minionsKilledStyle = isHighest(p.minionsKilled, 'minionsKilled') ? 'background:#ffe082;color:#b71c1c;font-weight:bold;' : '';
+                            const damageConversionStyle = isHighest(p.damageConversion, 'damageConversion') ? 'background:#ffe082;color:#b71c1c;font-weight:bold;' : '';
+
+                            html += `<tr class="data-row" id="row-${idx}" data-summoner-name="${p.summonerName}" data-summoner-id="${p.summonerId || ''}">
+                                <td style="text-align:center;">${p.summonerName}</td>
+                                <td style="width:40px; text-align:center;">${heroImg}</td>
+                                <td style="text-align:left; padding-left:5px;">${p.championName}</td>
+                                <td style="text-align:center;">${p.kills}/${p.deaths}/${p.assists}</td>
+                                <td style="text-align:center;">${p.win ? '<span style="color:green;">胜</span>' : '<span style="color:red;">负</span>'}</td>
+                                <td style="text-align:center;">${items}</td>
+                                <td class="${isHighest(p.champDamage, 'champDamage') ? 'highest-cell' : ''}" style="text-align:center;${champDamageStyle}">${p.champDamage}</td>
+                                <td class="${isHighest(p.damageToTurrets, 'damageToTurrets') ? 'highest-cell' : ''}" style="text-align:center;${damageToTurretsStyle}">${p.damageToTurrets}</td>
+                                <td class="${isHighest(p.damageSelfMitigated, 'damageSelfMitigated') ? 'highest-cell' : ''}" style="text-align:center;${damageSelfMitigatedStyle}">${p.damageSelfMitigated}</td>
+                                <td class="${isHighest(p.goldEarned, 'goldEarned') ? 'highest-cell' : ''}" style="text-align:center;${goldEarnedStyle}">${p.goldEarned}</td>
+                                <td class="${isHighest(p.minionsKilled, 'minionsKilled') ? 'highest-cell' : ''}" style="text-align:center;${minionsKilledStyle}">${p.minionsKilled}</td>
+                                <td class="${isHighest(p.damageConversion, 'damageConversion') ? 'highest-cell' : ''}" style="text-align:center;${damageConversionStyle}">${p.damageConversion}</td>
+                            </tr>`;
+                        });
+                        html += `</tbody></table></div>`;
+                        content.innerHTML = html;
+                        console.log('Match detail HTML rendered.');
+
+                        // 渲染后加hover事件：JS判断并应用内联样式
+                        setTimeout(() => {
+                            console.log('Attempting to add click listeners.');
+                            document.querySelectorAll('#match-detail-content tr.data-row').forEach(row => {
+                                row.onmouseenter = function() {
+                                    this.querySelectorAll('td').forEach(td => {
+                                        td.classList.add('hovered-td');
+
+                                        if (!td.classList.contains('highest-cell')) {
+                                            td.style.backgroundColor = '#fffde7';
+                                            td.style.color = '#222';
+                                            td.style.fontWeight = 'bold';
+                                        }
+                                        td.style.boxShadow = '0 2px 8px rgba(0,0,0,0.08)';
+
+                                    });
+                                };
+
+                                row.onmouseleave = function() {
+                                    this.querySelectorAll('td').forEach(td => {
+                                        td.classList.remove('hovered-td');
+
+                                        if (!td.classList.contains('highest-cell')) {
+                                             td.style.backgroundColor = '';
+                                             td.style.color = '';
+                                             td.style.fontWeight = '';
+                                        }
+                                         td.style.boxShadow = '';
+                                    });
+                                };
+
+                                // 添加点击事件
+                                row.addEventListener('click', function() {
+                                    const summonerId = this.dataset.summonerId;
+                                    const summonerName = this.dataset.summonerName;
+                                    console.log('Clicked row for summoner:', summonerName, 'ID:', summonerId);
+                                    if (summonerId && summonerName) {
+                                        // 点击对局详情玩家，跳转到召唤师查询标签页并查询
+                                        showSummonerLookup(summonerName, summonerId);
+                                        // 关闭对局详情弹窗
+                                        document.getElementById('match-detail-modal').style.display = 'none';
+                                    }
+                                });
+                            });
+                            console.log('Click listeners should be added.');
+                        }, 0); // 确保DOM更新后再添加事件监听
+
+                        // 添加显示召唤师战绩的函数 (不再直接从对局详情调用)
+                        // async function showSummonerMatchHistoryById(summonerId, summonerName) { ... }
+
+                    })
+                    .catch(err => {
+                        content.innerHTML = `<div style='color:red;'>加载失败: ${err}</div>`;
+                    });
+            }
+            document.getElementById('close-match-detail').onclick = function() {
+                document.getElementById('match-detail-modal').style.display = 'none';
+            };
+            document.getElementById('match-detail-modal').addEventListener('click', function(e) {
+                if (e.target === this) this.style.display = 'none';
+            });
+            document.addEventListener('click', function(e) {
+                let el = e.target;
+                // 确保点击事件不影响召唤师查询输入框和按钮等元素
+                while (el && !el.classList?.contains('match-item') && el.id !== 'summoner-name-input' && el.id !== 'lookup-summoner-button' && el.id !== 'lookup-mode-filter') el = el.parentElement; // 修改这里的条件
+
+                if (el && el.classList.contains('match-item')) {
+                    // 获取gameId（需要在matchHistory渲染时加上data-gameid）
+                    const gameId = el.getAttribute('data-gameid');
+                    if (gameId) showMatchDetail(gameId);
+                }
+            });
+
+        const modeMap = {
+            CLASSIC: '召唤师峡谷',
+            ARAM: '大乱斗',
+            URF: '无限火力',
+            PRACTICETOOL: '训练模式'
+        };
+
+        // 添加新的函数用于显示召唤师查询标签页并触发查询
+        async function showSummonerLookup(summonerName, summonerId = null) {
+            // 切换到召唤师查询标签页
+            document.querySelectorAll('.tab').forEach(tab => {
+                if (tab.dataset.tab === 'summoner-lookup') {
+                    tab.classList.add('active');
+                } else {
+                    tab.classList.remove('active');
+                }
+            });
+            document.querySelectorAll('.tab-content').forEach(c => {
+                if (c.id === 'summoner-lookup-tab') {
+                    c.classList.add('active');
+                } else {
+                    c.classList.remove('active');
+                }
+            });
+
+            const nameInput = document.getElementById('summoner-name-input'); // 这个元素将不存在
+            const resultsDiv = document.getElementById('summoner-lookup-results');
+            const modeFilter = document.getElementById('lookup-mode-filter');
+
+            // 清空之前的查询结果
+            resultsDiv.innerHTML = '';
+
+            // 如果提供了召唤师ID，通过ID查询
+            if (summonerId) {
+                 console.log('showSummonerLookup: Triggering ID-based lookup for', summonerName, '(', summonerId, ')');
+                lookupSummonerMatchHistoryById(summonerId, summonerName); // 调用通过ID查询的函数
+            } else if (summonerName) {
+                 // 如果只提供了名字（理论上只通过名字无法可靠查询，但这部分逻辑可以保留作为备用或提示）
+                  console.log('showSummonerLookup: Only name provided. Cannot perform reliable lookup:', summonerName);
+                  resultsDiv.innerHTML = `<div class="teammate-card">无法通过名字进行可靠查询: ${summonerName}</div>`;
+            } else {
+                 // 没有提供名字或ID，清空结果
+                  resultsDiv.innerHTML = '';
+            }
+
+             // 存储当前查看的特定召唤师信息
+            currentViewedSummonerId = summonerId; // 可能为null
+            currentViewedSummonerName = summonerName;
+        }
+
+        // 添加函数用于通过名字查询召唤师战绩 (不再需要，或者只保留一个提示)
+        // async function lookupSummonerMatchHistory(summonerName, mode = 'ALL') { ... }
+
+        // 监听召唤师查询模式过滤器变化 (修改)
+         document.getElementById('lookup-mode-filter').addEventListener('change', function() {
+             const mode = this.value;
+             // 检查当前是否正在显示某个特定召唤师的战绩 (通过currentViewedSummonerId)
+            if (currentViewedSummonerId) {
+                // 使用当前查看的召唤师ID和新模式重新查询
+                 console.log('Mode filter changed: Re-querying by ID for', currentViewedSummonerName, '(', currentViewedSummonerId, ') in mode', mode);
+                lookupSummonerMatchHistoryById(currentViewedSummonerId, currentViewedSummonerName, mode); // 调用通过ID查询的函数并传递模式
+            } else {
+                // 如果没有当前查看的特定召唤师 (例如直接切换到此标签页)，不做任何操作或显示提示
+                console.log('Mode filter changed: No specific summoner selected.');
+                // 可以选择在此处清空结果区域或显示提示
+                // document.getElementById('summoner-lookup-results').innerHTML = '';
+            }
+         });
+
+        // 添加函数用于通过 Summoner ID 查询召唤师战绩 (从之前的showSummonerMatchHistoryById修改)
+        async function lookupSummonerMatchHistoryById(summonerId, summonerName, mode = 'ALL') { // 添加mode参数
+            console.log('lookupSummonerMatchHistoryById (by ID): Fetching match history for ID:', summonerId, 'Name:', summonerName, 'in mode:', mode);
+
+            const resultsDiv = document.getElementById('summoner-lookup-results');
+            const spinner = document.getElementById('lookup-loading-spinner'); // 使用新的加载指示器ID
+             if (!spinner.classList.contains('loading-spinner')) {
+                spinner.className = 'loading-spinner';
+                document.getElementById('lookup-loading-spinner').appendChild(spinner);
+            }
+            spinner.style.display = 'inline-block';
+
+            resultsDiv.innerHTML = `<div class="teammate-card">正在加载 ${summonerName || summonerId} 的战绩...</div>`; // 显示名字或ID
+
+            try {
+                // 调用后端API获取召唤师战绩 (通过ID，并传递模式参数)
+                const response = await fetch(`/api/summoner_match_history_by_id/${encodeURIComponent(summonerId)}?mode=${encodeURIComponent(mode)}`);
+                console.log('lookup Fetch response status:', response.status);
+                const data = await response.json();
+                console.log('lookup Fetch data:', data);
+
+                spinner.style.display = 'none'; // 隐藏加载指示器
+
+                if (response.ok && data && data.matchHistory && data.matchHistory.length > 0) {
+                    // 复用 displayTeammatesStats 函数来展示单个玩家战绩
+                    displayTeammatesStats([{ summonerName: summonerName || '未知召唤师', matchHistory: data.matchHistory }], resultsDiv); // 封装数据并传递给展示函数
+                } else if (response.ok && data.matchHistory && data.matchHistory.length === 0) {
+                     resultsDiv.innerHTML = `<div class="teammate-card">未能找到 ${summonerName || summonerId} 在所选模式下的最近战绩。</div>`;
+                } else {
+                   resultsDiv.innerHTML = `<div class="teammate-card">无法获取 ${summonerName || summonerId} 的战绩: ${data.error || '未知错误'}</div>`;
+               }
+           } catch (error) {
+               console.error('Error looking up summoner match history by ID:', error);
+                spinner.style.display = 'none'; // 隐藏加载指示器
+                resultsDiv.innerHTML = `<div class="teammate-card">获取 ${summonerName || summonerId} 战绩时出错</div>`;
+           }
+        }
+
+        // 触发初始化时的队友战绩加载 (如果需要)
+        // fetchTeammatesStats();
+
+         // 修改 displayTeammatesStats 函数，使其可以指定目标容器
+         function displayTeammatesStats(teammates, targetContainer = null) {
+             const container = targetContainer || document.getElementById('teammates-list');
+             container.className = 'teammates-list';
+             if (!teammates || teammates.length === 0) {
+                 container.innerHTML = '<div class="teammate-card">当前没有队友数据</div>';
+                 return;
+             }
+             // 过滤逻辑
+             const filterValue = document.getElementById('mode-filter')?.value || 'ALL';
+             let filtered = JSON.parse(JSON.stringify(teammates));
+             if (filterValue !== 'ALL') {
+                 filtered.forEach(teammate => {
+                     let matches = teammate.matchHistory.filter(match => {
+                         if (filterValue === 'SOLO_DUO' || filterValue === 'FLEX') {
+                             return match.queueId === queueIdMap[filterValue];
+                         } else {
+                             return match.gameMode === filterValue;
+                         }
+                     });
+                     // 只取最新10场
+                     teammate.matchHistory = matches.slice(0, 10);
+                 });
+             } else {
+                 filtered.forEach(teammate => {
+                     teammate.matchHistory = teammate.matchHistory.slice(0, 10);
+                 });
+             }
+             // 只展示有战绩的队友
+             filtered = filtered.filter(teammate => teammate.matchHistory && teammate.matchHistory.length > 0);
+             container.innerHTML = filtered.map(teammate => {
+                 const totalKDA = teammate.matchHistory.reduce((sum, match) => sum + match.kda, 0);
+                 const avgKDA = (totalKDA / teammate.matchHistory.length).toFixed(2);
+                 const wins = teammate.matchHistory.filter(match => match.win).length;
+                 const winRate = ((wins / teammate.matchHistory.length) * 100).toFixed(1);
+                 return `
+                     <div class="teammate-card">
+                         <div class="teammate-header">
+                             <span class="teammate-name">${teammate.summonerName}</span>
+                             ${teammate.position && teammate.position !== '未知位置' ? `<span class="teammate-position">${teammate.position}</span>` : ''}
+                         </div>
+                         <div class="teammate-stats">
+                             <div class="teammate-stats-row">
+                                 <span class="teammate-stats-label">平均KDA:</span>
+                                 <span class="teammate-stats-value">${avgKDA}</span>
+                             </div>
+                             <div class="teammate-stats-row">
+                                 <span class="teammate-stats-label">胜率:</span>
+                                 <span class="teammate-stats-value">${winRate}%</span>
+                             </div>
+                         </div>
+                         <div class="match-history">
+                             ${teammate.matchHistory.map(match => `
+                                 <div class="match-item ${match.win ? 'win' : 'loss'}" data-gameid="${match.gameId || ''}" style="cursor:pointer;">
+                                     <div class="match-champion">
+                                         <img src="//game.gtimg.cn/images/lol/act/img/champion/${match.championName}.png" style="width:24px;height:24px;border-radius:50%;vertical-align:middle;margin-right:4px;" onerror="this.style.display='none'">
+                                         ${match.championName}
+                                     </div>
+                                     <div class="match-kda">
+                                         <div class="match-kda-stats">${match.kills}/${match.deaths}/${match.assists}</div>
+                                         <div class="match-kda-value">KDA: ${match.kda}</div>
+                                     </div>
+                                     <div class="match-gamemode" style="margin:5px 0;font-size:0.9em;color:#1a73e8;">${modeMap[match.gameMode] || match.gameMode || '其他模式'}</div>
+                                     <div class="match-duration">${match.gameDuration}</div>
+                                     <div class="match-time">${match.gameCreation}</div>
+                                 </div>
+                             `).join('')}
+                         </div>
+                     </div>
+                 `;
+             }).join('');
+         }
+    </script>
+</body>
+</html>
