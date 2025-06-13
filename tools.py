@@ -126,7 +126,7 @@ class modTools:
 
     def importMod(self, mod_path: str):
         mod_name = mod_path.replace(".zip","").split("\\")[-1]
-        command = f"mod-tools.exe import \"{mod_path}\" \"{self.installed_path}\{mod_name}\" --game:\"{self.game_path}\""
+        command = f"SBTX.exe TXSBI \"{mod_path}\" \"{self.installed_path}\{mod_name}\" --game:\"{self.game_path}\""
         
         out, err = subprocess.Popen(
             command,
@@ -141,7 +141,7 @@ class modTools:
             return True
         
     def saveProfile(self, mod_name: str):
-        command = f"mod-tools.exe mkoverlay \"{self.installed_path}\" \"{self.profile_path}\Default Profile\" --game:\"{self.game_path}\" \"--mods:{mod_name}\" --noTFT \"\""
+        command = f"SBTX.exe TXSBM \"{self.installed_path}\" \"{self.profile_path}\Default Profile\" --game:\"{self.game_path}\" \"--mods:{mod_name}\" --noTFT \"\""
         
         out, err = subprocess.Popen(
             command,
@@ -165,7 +165,7 @@ class modTools:
         Returns:
             tuple: (threading.Thread, threading.Event) 返回线程对象和停止事件，可用于后续操作
         """
-        command = f"mod-tools.exe runoverlay \"{self.profile_path}\\Default Profile\" \"{self.profile_path}\\Default Profile.config\" --game:\"{self.game_path}\" \"--mods:Nottingham Ezreal\" --opts:none"
+        command = f"SBTX.exe TXSBR \"{self.profile_path}\\Default Profile\" \"{self.profile_path}\\Default Profile.config\" --game:\"{self.game_path}\" \"--mods:Nottingham Ezreal\" --opts:none"
         
         # 创建停止事件
         stop_event = threading.Event()

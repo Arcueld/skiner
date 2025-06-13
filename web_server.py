@@ -122,7 +122,7 @@ class SkinWebServer:
                 .replace("DrMundo","Dr. Mundo").replace("JarvanIV","Jarvan IV").replace("Khazix","Kha'Zix").replace("KogMaw","Kog'Maw") \
                 .replace("LeeSin","Lee Sin").replace("MasterYi","Master Yi").replace("MissFortune","Miss Fortune") \
                 .replace("Nunu","Nunu & Willump").replace("RekSai","Rek'Sai").replace("RenataGlasc","Renata Glasc").replace("TahmKench","Tahm Kench") \
-                .replace("Velkoz","Vel'Koz").replace("XinZhao","Xin Zhao").replace("KSante","K'Sante")
+                .replace("Velkoz","Vel'Koz").replace("XinZhao","Xin Zhao").replace("KSante","K'Sante").replace("Kaisa","Kai'Sa")
                 
                 # 再次尝试导入
                 skin_path = f"skins\\{processed_champion}\\{selected_skin}.zip"

@@ -28,7 +28,8 @@ class ChampionMonitor:
             "tahmkench": "Tahm Kench",
             "velkoz": "Vel'Koz",
             "xinzhao": "Xin Zhao",
-            "Velkoz": "Vel'Koz"
+            "Velkoz": "Vel'Koz",
+            "Kaisa" : "Kai'Sa"
         }
     
     def normalize_champion_name(self, name):
@@ -41,6 +42,10 @@ class ChampionMonitor:
         # 特殊处理 Vel'Koz
         if name == "Vel'Koz":
             return "Velkoz"
+        # 特殊处理 Kai'Sa
+        if name == "Kai'Sa":
+            return "Kaisa"
+        
         # 删除所有特殊字符并转为小写
         return ''.join(c.lower() for c in name if c.isalnum())
     
