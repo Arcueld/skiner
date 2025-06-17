@@ -1,4 +1,13 @@
+# 警告
+
+lol-manager的核心dll `cslol-dll.dll` 需要签名 二开不了
+
+没有相关对抗经验 目前lol-manager已被标记 马服会封号
+
+慎用
+
 # 使用方法
+
 1. 先启动 League of Legends 客户端（LOL）
 
 2. 运行 main.py 脚本
